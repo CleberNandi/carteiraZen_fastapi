@@ -1,0 +1,113 @@
+[project]
+name = "base-core-fastapi"
+version = "0.0.1"
+description = "Projeto base para FastAPI"
+readme = "README.md"
+license = "MIT"
+authors = [{ name = "Cleber Goulart Nandi", email = "cleber.nandi@gmail.com" }]
+requires-python = ">=3.13.3"
+dependencies = [
+    "fastapi[standard]>=0.115.13",
+    "pydantic>=2.11.7",
+    "pydantic-settings>=2.10.0",
+    "python-dotenv>=1.1.0",
+    "pytest>=8.4.1",
+    "pytest-asyncio>=1.0.0",
+    "dynaconf>=3.2.5",
+]
+
+[project.urls]
+# Homepage = ""
+# Documentation = "https://example.org"
+# Repository = "https://github.com/me/spam.git"
+# Issues = "https://github.com/me/spam/issues"
+# Changelog = "https://github.com/me/spam/blob/master/CHANGELOG.md"
+
+[project.optional-dependencies]
+dev = ["ruff", "pyright", "pytest", "pytest-xdist"]
+
+[project.scripts]
+# O comando 'base_core' executa o app FastAPI
+base_core = "app.main:app"
+
+# ============================
+# Lint e formatação (Ruff)
+# ============================
+[tool.ruff]
+line-length = 119
+target-version = "py313"
+fix = true
+show-fixes = true
+indent-width = 4
+exclude = ["venv", ".venv", "env", ".env", "node_modules", "__pycache__"]
+
+[tool.ruff.lint]
+select = [
+    "ASYNC", "A", "ANN", "B", "BLE", "C4", "C90", "COM", "E", "EM", "ERA", "EXE", "F", "FBT", "FIX", "I", "ICN", "ISC", "Q", "RET", "RSE", "S", "SIM", "SLF", "T10", "T20", "TC", "TD", "TRY", "UP", "W", "YTT", "RUF", "N",
+]
+ignore = ["T201", "COM812"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*.py" = ["ANN201", "S101"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+line-ending = "lf"
+
+[tool.ruff.lint.isort]
+# Ensina ao Ruff qual é o pacote principal do seu projeto.
+# Deve ser o mesmo nome da pasta principal.
+known-first-party = ["app"]
+
+
+# ============================
+# Tipagem (Pyright)
+# ============================
+[tool.pyright]
+typeCheckingMode = "strict"
+pythonVersion = "3.13.3"
+include = ["app", "tests"]
+exclude = [
+    "**/venv", "**/.venv", "**/env", "**/.env", "**/node_modules", "**/__pycache__",
+]
+venv = ".venv"
+venvPath = "."
+executionEnvironments = [{ root = "app" }]
+
+# ============================
+# Testes (Pytest)
+# ============================
+[tool.pytest.ini_options]
+pythonpath = ["app"]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+addopts = [
+  "--strict-config",
+  "--strict-markers",
+  "--ignore=docs_src",
+  "-s",
+  "--color=yes",
+  "--tb=short"
+]
+xfail_strict = true
+junit_family = "xunit2"
+
+
+# ============================
+# Build e Setuptools
+# ============================
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[dependency-groups]
+dev = [
+    "pre-commit>=4.2.0",
+]
+
+[tool.setuptools.packages.find]
+where = ["app"]
+
+[tool.setuptools]
+package-dir = { "" = "app" }

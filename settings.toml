@@ -1,0 +1,13 @@
+[default]
+ENV = "dev"
+PROJECT_NAME = "My Awesome Project"
+VERSION = "0.1.0"
+
+[dev]
+ENV = "dev"
+
+[hml]
+ENV = "hml"
+
+[prod]
+ENV = "prod"
