@@ -60,6 +60,42 @@ base_core_fastapi/
 - Estrutura pronta para crescer, com separação de camadas (api, core, crud, db, models, schemas).
 - Use Dynaconf para múltiplos ambientes e segredos.
 
+## Exemplos de uso dos endpoints User (CRUD)
+
+### Criar usuário
+```bash
+curl -X POST "http://localhost:8000/api/v1/users/" \
+     -H "Content-Type: application/json" \
+     -d '{"name": "João", "email": "joao@email.com"}'
+```
+
+### Listar usuários
+```bash
+curl -X GET "http://localhost:8000/api/v1/users/"
+```
+
+### Buscar usuário por ID
+```bash
+curl -X GET "http://localhost:8000/api/v1/users/1"
+```
+
+### Buscar usuário por email
+```bash
+curl -X GET "http://localhost:8000/api/v1/users/email/joao@email.com"
+```
+
+### Atualizar usuário
+```bash
+curl -X PUT "http://localhost:8000/api/v1/users/1" \
+     -H "Content-Type: application/json" \
+     -d '{"name": "João da Silva", "email": "joao@email.com"}'
+```
+
+### Deletar usuário
+```bash
+curl -X DELETE "http://localhost:8000/api/v1/users/1"
+```
+
 ---
 
 > Projeto inicializado com ❤️ e FastAPI.

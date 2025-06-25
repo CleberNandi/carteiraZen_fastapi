@@ -1,5 +1,5 @@
 # Dockerfile para FastAPI
-FROM python:3.13.5-alpine3.22
+FROM python:3.12-alpine3.20
 
 WORKDIR /app
 
@@ -11,7 +11,7 @@ COPY settings.toml ./
 COPY .secrets.toml ./
 COPY app ./app
 
-RUN pip install --upgrade pip && \
+RUN pip install --upgrade pip setuptools wheel && \
     pip install 'uvicorn[standard]' && \
     pip install .
 
