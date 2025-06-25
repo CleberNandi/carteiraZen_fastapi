@@ -2,9 +2,9 @@
 
 .PHONY: run dev test lint format install up clean-docker
 
-# Instala as dependências do projeto
+# Instala as dependências do projeto e hooks do pre-commit
 install:
-	pip install -r requirements.txt || pip install .[dev]
+	pre-commit install
 
 # Inicia o servidor FastAPI em modo desenvolvimento com recarregamento automático
 run:
