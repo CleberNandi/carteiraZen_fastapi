@@ -31,7 +31,23 @@ format:
 up:
 	docker-compose up
 
-# Remove todos os containers, imagens e volumes do projeto
+up-build:
+	docker-compose up --build
+
+# Remove todos os containers e imagens, mas mantém os volumes (dados do banco)
 clean-docker:
+	docker-compose down --rmi all --remove-orphans
+	docker system prune -af
+
+# Remove tudo, inclusive volumes (dados do banco serão apagados!)
+clean-docker-all:
 	docker-compose down -v --rmi all --remove-orphans
 	docker system prune -af
+
+# Backup do banco Postgres do container db para o arquivo backup.sql
+backup-db:
+	docker exec db pg_dump -U $$POSTGRES_USER $$POSTGRES_DB > backup.sql
+
+# Restore do banco Postgres do arquivo backup.sql para o container db
+restore-db:
+	cat backup.sql | docker exec -i db psql -U $$POSTGRES_USER $$POSTGRES_DB
