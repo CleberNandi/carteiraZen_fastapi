@@ -6,6 +6,7 @@ from fastapi import FastAPI
 from app.api.agencias.v1.routers import router as agencias_router
 from app.api.auditoria.v1.routers import router as auditoria_router
 from app.api.bancos.v1.routers import router as bancos_router
+from app.api.cartoes.v1.routers import router as cartoes_router
 from app.api.contas_correntes.v1.routers import router as contas_correntes_router
 from app.api.users.v1.routers import router as users_router
 from app.core.config import settings
@@ -43,3 +44,4 @@ app.include_router(bancos_router, prefix="/api/v1")
 app.include_router(auditoria_router, prefix="/api/v1")
 app.include_router(agencias_router, prefix="/api/v1")
 app.include_router(contas_correntes_router, prefix="/api/v1")
+app.include_router(cartoes_router, prefix="/api/v1")
