@@ -1,7 +1,8 @@
 import os
+from collections.abc import Generator
 
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import Session, sessionmaker
 
 import app.models  # type: ignore # noqa: F401  # Importa todos os models para registrar no metadata
 from app.db.base import Base
@@ -25,6 +26,14 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 def create_all_tables_for_test() -> None:
     if os.getenv("PYTEST_CURRENT_TEST"):
         Base.metadata.create_all(bind=engine)
+
+
+def get_db() -> Generator[Session]:
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
 
 
 create_all_tables_for_test()
