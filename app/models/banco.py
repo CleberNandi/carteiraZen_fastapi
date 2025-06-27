@@ -1,4 +1,4 @@
-from sqlalchemy import Boolean, Column, Integer, String
+from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String, func
 
 from app.db.base import Base
 
@@ -12,3 +12,10 @@ class Banco(Base):
     cnpj = Column(String, nullable=True, unique=True, index=True)
     site = Column(String, nullable=True)
     ativo = Column(Boolean, default=True)
+    # Auditoria
+    created_by = Column(Integer, ForeignKey("users.id"), nullable=True)
+    created_at = Column(DateTime, server_default=func.now())
+    updated_by = Column(Integer, ForeignKey("users.id"), nullable=True)
+    updated_at = Column(DateTime, onupdate=func.now())
+    deleted_by = Column(Integer, ForeignKey("users.id"), nullable=True)
+    deleted_at = Column(DateTime, nullable=True)

@@ -50,8 +50,39 @@ def read_user_by_email(email: str, db: Session = Depends(get_db)) -> User:  # no
 
 
 @router.post("/users/", response_model=User, tags=["Users"])
-def create_user(user: UserCreate, db: Session = Depends(get_db)) -> User:  # noqa: B008
+def create_user(
+    user: UserCreate,
+    user_id: int,
+    db: Session = Depends(get_db),  # noqa: B008
+) -> User:
     db_user = crud_user.get_user_by_email(db, email=user.email)
     if db_user:
         raise HTTPException(status_code=400, detail="Email already registered")
-    return crud_user.create_user(db=db, user=user)
+    return crud_user.create_user(db=db, user=user, user_id=user_id)
+
+
+@router.put("/users/{user_id}", response_model=User, tags=["Users"])
+def update_user(
+    user_id: int,
+    user: UserCreate,
+    executor_id: int,  # id do usuário executor
+    db: Session = Depends(get_db),  # noqa: B008
+) -> User:
+    db_user = crud_user.update_user(
+        db=db, user_id=user_id, user=user, executor_id=executor_id
+    )
+    if db_user is None:
+        raise HTTPException(status_code=404, detail="User not found")
+    return db_user
+
+
+@router.delete("/users/{user_id}", tags=["Users"])
+def delete_user(
+    user_id: int,
+    executor_id: int,  # id do usuário executor
+    db: Session = Depends(get_db),  # noqa: B008
+) -> dict[str, str]:
+    sucesso = crud_user.delete_user(db=db, user_id=user_id, executor_id=executor_id)
+    if not sucesso:
+        raise HTTPException(status_code=404, detail="User not found")
+    return {"detail": "User deleted successfully"}

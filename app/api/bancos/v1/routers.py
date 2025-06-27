@@ -38,38 +38,40 @@ def read_banco(banco_id: int, db: Session = Depends(get_db)) -> Banco:  # noqa: 
 @router.post("/bancos/", response_model=Banco, tags=["Bancos"])
 def create_banco(
     banco: BancoCreate,
+    user_id: int,  # Novo parâmetro obrigatório
     db: Session = Depends(get_db),  # noqa: B008
 ) -> Banco:
     db_banco = crud_banco.get_banco_by_codigo(db, codigo=banco.codigo)
     if db_banco:
         raise HTTPException(status_code=400, detail="Código de banco já cadastrado")
-    return crud_banco.create_banco(db=db, banco=banco)
+    return crud_banco.create_banco(db=db, banco=banco, user_id=user_id)
 
 
 @router.put("/bancos/{banco_id}", response_model=Banco, tags=["Bancos"])
 def update_banco(
     banco_id: int,
     banco: BancoCreate,
+    user_id: int,  # Novo parâmetro obrigatório
     db: Session = Depends(get_db),  # noqa: B008
 ) -> Banco:
     db_banco = crud_banco.get_banco(db, banco_id=banco_id)
     if db_banco is None:
         raise HTTPException(status_code=404, detail="Banco não encontrado")
-    for attr, value in banco.model_dump().items():
-        setattr(db_banco, attr, value)
-    db.commit()
-    db.refresh(db_banco)
-    return db_banco
+    banco_atualizado = crud_banco.update_banco(
+        db=db, banco_id=banco_id, banco=banco, user_id=user_id
+    )
+    if banco_atualizado is None:
+        raise HTTPException(status_code=404, detail="Banco não encontrado")
+    return banco_atualizado
 
 
 @router.delete("/bancos/{banco_id}", tags=["Bancos"])
 def delete_banco(
     banco_id: int,
+    user_id: int,  # Novo parâmetro obrigatório
     db: Session = Depends(get_db),  # noqa: B008
 ) -> dict[str, str]:
-    db_banco = crud_banco.get_banco(db, banco_id=banco_id)
-    if db_banco is None:
+    sucesso = crud_banco.delete_banco(db=db, banco_id=banco_id, user_id=user_id)
+    if not sucesso:
         raise HTTPException(status_code=404, detail="Banco não encontrado")
-    db.delete(db_banco)
-    db.commit()
     return {"detail": "Banco removido com sucesso"}
