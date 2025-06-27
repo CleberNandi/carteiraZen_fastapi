@@ -4,7 +4,7 @@ FROM python:3.13.3-alpine3.22
 WORKDIR /app
 
 # Instala dependências de build e sistema necessárias para Alpine
-RUN apk add --no-cache build-base gcc musl-dev libffi-dev openssl-dev
+RUN apk add --no-cache build-base gcc musl-dev libffi-dev openssl-dev bash
 
 COPY pyproject.toml ./
 COPY settings.toml ./
@@ -21,4 +21,4 @@ RUN chmod +x /wait-for-it.sh
 
 EXPOSE 8000
 
-CMD ["/wait-for-it.sh", "db:5432", "--", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+CMD ["/wait-for-it.sh", "db:5432", "--timeout=60", "--strict", "--", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
