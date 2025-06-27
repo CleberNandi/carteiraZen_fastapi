@@ -9,8 +9,8 @@ from app.api.users.v1.routers import router as users_router
 from app.core.config import settings
 from app.db.session import Base, engine
 
-# Adiciona o seed dos bancos na inicialização
-from app.scripts.seed_bancos import seed_bancos
+# Adiciona o seed completo na inicialização
+from app.scripts.seed_all import seed_all
 
 
 # Lifespan tipado como AsyncGenerator[None] para compatibilidade total com FastAPI e mypy.
@@ -18,7 +18,7 @@ from app.scripts.seed_bancos import seed_bancos
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None]:
     Base.metadata.create_all(bind=engine)
-    seed_bancos()
+    seed_all()
     yield
 
 

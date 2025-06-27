@@ -1,5 +1,6 @@
+from app.crud.banco import create_banco, get_banco_by_codigo
 from app.db.session import SessionLocal
-from app.models.banco import Banco
+from app.schemas.banco import BancoCreate
 
 BANCOS_PRINCIPAIS = [
     {
@@ -85,16 +86,32 @@ BANCOS_PRINCIPAIS = [
 ]
 
 
-def seed_bancos() -> None:
+def seed_bancos(user_id: int | None = None) -> None:
     db = SessionLocal()
     for banco in BANCOS_PRINCIPAIS:
-        exists = db.query(Banco).filter(Banco.codigo == banco["codigo"]).first()
+        exists = get_banco_by_codigo(db, str(banco["codigo"]))
         if not exists:
-            db.add(Banco(**banco))
-    db.commit()
+            banco_obj = BancoCreate(
+                nome=str(banco["nome"]),
+                codigo=str(banco["codigo"]),
+                ispb=str(banco["ispb"]) if banco.get("ispb") is not None else None,
+                cnpj=str(banco["cnpj"]) if banco.get("cnpj") is not None else None,
+                site=str(banco["site"]) if banco.get("site") is not None else None,
+                ativo=bool(banco.get("ativo", True)),
+            )
+            create_banco(db, banco_obj, user_id or 1)
     db.close()
 
 
 if __name__ == "__main__":
-    seed_bancos()
+    from app.db.session import SessionLocal
+    from app.models.user import User
+
+    db = SessionLocal()
+    user = db.query(User).filter(User.email == "system@system.local").first()
+    db.close()
+    system_id = getattr(user, "id", None)
+    if not isinstance(system_id, int):
+        system_id = None
+    seed_bancos(user_id=system_id)
     print("Seed de bancos executado com sucesso!")
