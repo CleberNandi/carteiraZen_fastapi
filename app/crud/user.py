@@ -5,6 +5,10 @@ from app.models.user import User as UserModel
 from app.schemas.user import UserCreate
 
 
+class UserCreationRequiresUserIdError(Exception):
+    pass
+
+
 # Função para buscar usuário por ID
 def get_user(db: Session, user_id: int) -> UserModel | None:
     return db.query(UserModel).filter(UserModel.id == user_id).first()
@@ -21,7 +25,14 @@ def get_users(db: Session, skip: int = 0, limit: int = 10) -> list[UserModel]:
 
 
 # Função para criar usuário
-def create_user(db: Session, user: UserCreate, user_id: int) -> UserModel:
+def create_user(db: Session, user: UserCreate, user_id: int | None = None) -> UserModel:
+    # Permite user_id ausente apenas se não houver usuários
+    total_users = db.query(UserModel).count()
+    if total_users > 0 and user_id is None:
+        msg = (
+            "user_id é obrigatório para criar novos usuários após o primeiro cadastro."
+        )
+        raise UserCreationRequiresUserIdError(msg)
     db_user = UserModel(name=user.name, email=user.email)
     db.add(db_user)
     db.commit()
@@ -31,7 +42,7 @@ def create_user(db: Session, user: UserCreate, user_id: int) -> UserModel:
         tabela="users",
         registro_id=db_user.id,
         acao="create",
-        user_id=user_id,
+        user_id=user_id if user_id is not None else None,
         dados_depois=str(user.model_dump()),
     )
     db.add(auditoria)

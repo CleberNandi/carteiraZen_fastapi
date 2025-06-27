@@ -1,10 +1,11 @@
 from collections.abc import Generator
 from typing import Any
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.crud import user as crud_user
+from app.crud.user import UserCreationRequiresUserIdError
 from app.db.session import SessionLocal
 from app.schemas.user import User, UserCreate
 
@@ -52,13 +53,18 @@ def read_user_by_email(email: str, db: Session = Depends(get_db)) -> User:  # no
 @router.post("/users/", response_model=User, tags=["Users"])
 def create_user(
     user: UserCreate,
-    user_id: int,
+    user_id: int | None = None,
     db: Session = Depends(get_db),  # noqa: B008
 ) -> User:
     db_user = crud_user.get_user_by_email(db, email=user.email)
     if db_user:
         raise HTTPException(status_code=400, detail="Email already registered")
-    return crud_user.create_user(db=db, user=user, user_id=user_id)
+    try:
+        return crud_user.create_user(db=db, user=user, user_id=user_id)
+    except UserCreationRequiresUserIdError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)
+        ) from e
 
 
 @router.put("/users/{user_id}", response_model=User, tags=["Users"])
