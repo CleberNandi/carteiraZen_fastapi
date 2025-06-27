@@ -75,7 +75,9 @@ exclude = [
 ]
 venv = ".venv"
 venvPath = "."
-executionEnvironments = [{ root = "app" }]
+executionEnvironments = [
+  { root = ".", extraPaths = ["app"] }
+]
 
 # ============================
 # Testes (Pytest)
