@@ -1,4 +1,5 @@
 from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String, func
+from sqlalchemy.orm import relationship
 
 from app.db.base import Base
 
@@ -19,3 +20,5 @@ class Banco(Base):
     updated_at = Column(DateTime, onupdate=func.now())
     deleted_by = Column(Integer, ForeignKey("users.id"), nullable=True)
     deleted_at = Column(DateTime, nullable=True)
+
+    agencias = relationship("Agencia", back_populates="banco")
