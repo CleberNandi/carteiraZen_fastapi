@@ -7,7 +7,7 @@ class AuditoriaBase(BaseModel):
     tabela: str
     registro_id: int
     acao: str
-    user_id: int
+    user_id: int | None = None
     data: datetime | None = None
     dados_antes: str | None = None
     dados_depois: str | None = None
