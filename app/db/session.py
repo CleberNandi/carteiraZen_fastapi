@@ -3,8 +3,8 @@ import os
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
+import app.models  # type: ignore # noqa: F401  # Importa todos os models para registrar no metadata
 from app.db.base import Base
-from app.models import user  # noqa: F401  # Import necessário para registrar o model
 
 SQLALCHEMY_DATABASE_URL = (
     "sqlite:///:memory:"
