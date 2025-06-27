@@ -62,5 +62,6 @@
     "**/__pycache__": true,
     "**/.pytest_cache": true,
     "**/base_core_fastapi.egg-info": true,
+    "**/carteirazen.egg-info": true,
   }
 }

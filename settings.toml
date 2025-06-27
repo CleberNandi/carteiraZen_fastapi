@@ -1,6 +1,6 @@
 [default]
 ENV = "dev"
-PROJECT_NAME = "My Awesome Project"
+PROJECT_NAME = "CarteiraZen"
 VERSION = "0.1.0"
 
 [dev]

@@ -1,7 +1,7 @@
 [project]
-name = "base-core-fastapi"
+name = "carteirazen"
 version = "0.0.1"
-description = "Projeto base para FastAPI"
+description = "Projeto CarteiraZen para FastAPI"
 readme = "README.md"
 license = "MIT"
 authors = [{ name = "Cleber Goulart Nandi", email = "cleber.nandi@gmail.com" }]
@@ -19,18 +19,18 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/clebernandi/base-core-fastapi"
+Homepage = "https://github.com/CleberNandi/carteiraZen_fastapi"
 Documentation = "http://localhost:8000/app/docs"
-Repository = "https://github.com/clebernandi/base-core-fastapi"
-Issues = "https://github.com/clebernandi/base-core-fastapi/issues"
-# Changelog = "https://github.com/clebernandi/base-core-fastapi/blob/master/CHANGELOG.md"
+Repository = "https://github.com/CleberNandi/carteiraZen_fastapi"
+Issues = "https://github.com/CleberNandi/carteiraZen_fastapi/issues"
+# Changelog = "https://github.com/CleberNandi/carteiraZen_fastapi/blob/master/CHANGELOG.md"
 
 [project.optional-dependencies]
 dev = ["ruff", "pyright", "pytest", "pytest-xdist"]
 
 [project.scripts]
-# O comando 'base_core' executa o app FastAPI
-base_core = "app.main:app"
+# O comando 'carteirazen' executa o app FastAPI
+carteirazen = "app.main:app"
 
 # ============================
 # Lint e formatação (Ruff)
@@ -106,6 +106,7 @@ build-backend = "setuptools.build_meta"
 [dependency-groups]
 dev = [
     "pre-commit>=4.2.0",
+    "pytest>=8.4.1",
 ]
 
 [tool.setuptools.packages.find]

@@ -3,9 +3,13 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
-from app.api.v1 import endpoints
-from app.config.config import settings
+from app.api.bancos.v1.routers import router as bancos_router
+from app.api.users.v1.routers import router as users_router
+from app.core.config import settings
 from app.db.session import Base, engine
+
+# Adiciona o seed dos bancos na inicialização
+from app.scripts.seed_bancos import seed_bancos
 
 
 # Lifespan tipado como AsyncGenerator[None] para compatibilidade total com FastAPI e mypy.
@@ -13,6 +17,7 @@ from app.db.session import Base, engine
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None]:
     Base.metadata.create_all(bind=engine)
+    seed_bancos()
     yield
 
 
@@ -30,4 +35,5 @@ if settings.ENV in ("prod", "production"):
     app.redoc_url = None
     app.openapi_url = None
 
-app.include_router(endpoints.router, prefix="/api/v1")
+app.include_router(users_router, prefix="/api/v1")
+app.include_router(bancos_router, prefix="/api/v1")

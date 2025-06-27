@@ -1,4 +1,4 @@
-# Base Core FastAPI
+# CarteiraZen
 
 > Autor: Cleber Goulart Nandi
 
@@ -7,7 +7,7 @@ Projeto base para aplicações FastAPI, com estrutura profissional, configuraç�
 ## Estrutura de Pastas
 
 ```
-base_core_fastapi/
+carteirazen/
 ├── app/
 │   ├── api/
 │   ├── config/
