@@ -9,7 +9,7 @@ from app.api.bancos.v1.routers import router as bancos_router
 from app.api.cartoes.v1.routers import router as cartoes_router
 from app.api.contas_correntes.v1.routers import router as contas_correntes_router
 from app.api.users.v1.routers import router as users_router
-from app.core.config import settings
+from app.core.config import config
 from app.db.session import Base, engine
 
 # Adiciona o seed completo na inicialização
@@ -26,15 +26,15 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None]:
 
 
 app = FastAPI(
-    title=getattr(settings, "PROJECT_NAME", "No Project Name"),
-    version=getattr(settings, "VERSION", "0.0.1"),
-    docs_url=f"/{settings.BASE_URL}/docs",
-    redoc_url=f"/{settings.BASE_URL}/redoc",
-    openapi_url=f"/{settings.BASE_URL}/openapi",
+    title=getattr(config, "PROJECT_NAME", "No Project Name"),
+    version=getattr(config, "VERSION", "0.0.1"),
+    docs_url=f"/{config.BASE_URL}/docs",
+    redoc_url=f"/{config.BASE_URL}/redoc",
+    openapi_url=f"/{config.BASE_URL}/openapi",
     lifespan=lifespan,
 )
 
-if settings.ENV in ("prod", "production"):
+if config.ENV in ("prod", "production"):
     app.docs_url = None
     app.redoc_url = None
     app.openapi_url = None

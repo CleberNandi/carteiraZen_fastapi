@@ -3,6 +3,7 @@ from fastapi.testclient import TestClient
 
 from app.db.session import Base, engine
 from app.main import app
+from tests.factories import user_data, user_data_2
 
 client = TestClient(app)
 
@@ -20,7 +21,7 @@ def setup_db():
 
 
 def test_create_first_user_without_user_id():
-    data = {"name": "Primeiro", "email": "primeiro@example.com"}
+    data = user_data()
     resp = client.post("/api/v1/users/", json=data)
     assert resp.status_code == 200
     assert resp.json()["name"] == "Primeiro"
@@ -29,20 +30,16 @@ def test_create_first_user_without_user_id():
 
 
 def test_create_second_user_requires_user_id():
-    client.post(
-        "/api/v1/users/", json={"name": "Primeiro", "email": "primeiro@example.com"}
-    )
-    data = {"name": "Segundo", "email": "segundo@example.com"}
+    client.post("/api/v1/users/", json=user_data())
+    data = user_data_2()
     resp = client.post("/api/v1/users/", json=data)
     assert resp.status_code == 400
     assert "user_id é obrigatório" in resp.json()["detail"]
 
 
 def test_create_user_with_user_id():
-    client.post(
-        "/api/v1/users/", json={"name": "Primeiro", "email": "primeiro@example.com"}
-    )
-    data = {"name": "Segundo", "email": "segundo@example.com"}
+    client.post("/api/v1/users/", json=user_data())
+    data = user_data_2()
     resp = client.post("/api/v1/users/?user_id=1", json=data)
     assert resp.status_code == 200
     assert resp.json()["name"] == "Segundo"
@@ -51,11 +48,13 @@ def test_create_user_with_user_id():
 
 
 def test_update_user_auditoria():
-    resp = client.post(
-        "/api/v1/users/", json={"name": "Primeiro", "email": "primeiro@example.com"}
-    )
+    resp = client.post("/api/v1/users/", json=user_data())
     user_id = resp.json()["id"]
-    update_data = {"name": "Primeiro Atualizado", "email": "primeiro@example.com"}
+    update_data = {
+        "name": "Primeiro Atualizado",
+        "email": "primeiro@example.com",
+        "hashed_password": "hash123",
+    }
     resp = client.put(f"/api/v1/users/{user_id}?executor_id=2", json=update_data)
     assert resp.status_code == 200
     assert resp.json()["name"] == "Primeiro Atualizado"
@@ -69,9 +68,7 @@ def test_update_user_auditoria():
 
 
 def test_delete_user_auditoria():
-    resp = client.post(
-        "/api/v1/users/", json={"name": "Primeiro", "email": "primeiro@example.com"}
-    )
+    resp = client.post("/api/v1/users/", json=user_data())
     user_id = resp.json()["id"]
     resp = client.delete(f"/api/v1/users/{user_id}?executor_id=3")
     assert resp.status_code == 200

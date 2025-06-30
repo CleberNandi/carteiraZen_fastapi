@@ -33,7 +33,9 @@ def create_user(db: Session, user: UserCreate, user_id: int | None = None) -> Us
             "user_id é obrigatório para criar novos usuários após o primeiro cadastro."
         )
         raise UserCreationRequiresUserIdError(msg)
-    db_user = UserModel(name=user.name, email=user.email)
+    db_user = UserModel(
+        name=user.name, email=user.email, hashed_password=user.hashed_password
+    )
     db.add(db_user)
     db.commit()
     db.refresh(db_user)

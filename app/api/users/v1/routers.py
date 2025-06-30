@@ -1,4 +1,3 @@
-from collections.abc import Generator
 from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -6,18 +5,10 @@ from sqlalchemy.orm import Session
 
 from app.crud import user as crud_user
 from app.crud.user import UserCreationRequiresUserIdError
-from app.db.session import SessionLocal
+from app.db.session import get_db
 from app.schemas.user import User, UserCreate
 
 router = APIRouter()
-
-
-def get_db() -> Generator[Session]:
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
 
 
 @router.get("/", tags=["Root"])

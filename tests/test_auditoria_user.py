@@ -3,6 +3,7 @@ from fastapi.testclient import TestClient
 
 from app.db.session import Base, engine
 from app.main import app
+from tests.factories import user_data
 
 client = TestClient(app)
 
@@ -21,11 +22,14 @@ def setup_db():
 
 def test_auditoria_log_user_update():
     # Cria usuário
-    user_data = {"name": "User Auditado", "email": "auditado@example.com"}
-    resp = client.post("/api/v1/users/?user_id=1", json=user_data)
+    resp = client.post("/api/v1/users/?user_id=1", json=user_data())
     user_id = resp.json()["id"]
     # Atualiza usuário
-    update_data = {"name": "User Atualizado", "email": "auditado@example.com"}
+    update_data = {
+        "name": "User Atualizado",
+        "email": "auditado@example.com",
+        "hashed_password": "hash123",
+    }
     client.put(f"/api/v1/users/{user_id}?executor_id=2", json=update_data)
     # Consulta auditoria
     resp = client.get("/api/v1/auditoria/?tabela=users&acao=update")
@@ -38,8 +42,7 @@ def test_auditoria_log_user_update():
 
 def test_auditoria_log_user_delete():
     # Cria usuário
-    user_data = {"name": "User Deletado", "email": "del@example.com"}
-    resp = client.post("/api/v1/users/?user_id=1", json=user_data)
+    resp = client.post("/api/v1/users/?user_id=1", json=user_data())
     user_id = resp.json()["id"]
     # Deleta usuário
     client.delete(f"/api/v1/users/{user_id}?executor_id=3")
