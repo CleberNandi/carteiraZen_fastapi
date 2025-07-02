@@ -1,3 +1,6 @@
+from typing import Any
+
+from core.security import gerar_totp_secret, get_password_hash
 from sqlalchemy.orm import Session
 
 from app.models.auditoria import Auditoria
@@ -34,7 +37,13 @@ def create_user(db: Session, user: UserCreate, user_id: int | None = None) -> Us
         )
         raise UserCreationRequiresUserIdError(msg)
     db_user = UserModel(
-        name=user.name, email=user.email, hashed_password=user.hashed_password
+        name=user.name,
+        email=user.email,
+        hashed_password=get_password_hash(user.hashed_password),
+        totp_secret=user.totp_secret,
+        is_active=user.is_active,
+        is_superuser=user.is_superuser,
+        is_2fa_enabled=user.is_2fa_enabled,
     )
     db.add(db_user)
     db.commit()
@@ -60,6 +69,8 @@ def update_user(
         return None
     dados_antes = db_user.__dict__.copy()
     for attr, value in user.model_dump().items():
+        if attr == "hashed_password":
+            value = get_password_hash(value)
         setattr(db_user, attr, value)
     db.commit()
     db.refresh(db_user)
@@ -95,3 +106,16 @@ def delete_user(db: Session, user_id: int, executor_id: int) -> bool:
     db.add(auditoria)
     db.commit()
     return True
+
+
+def ativar_2fa_para_usuario(user: UserModel, db: Session):
+    if not user.totp_secret:
+        user.totp_secret = gerar_totp_secret()
+    user.is_2fa_enabled = True
+    db.commit()
+    db.refresh(user)
+
+    totp_uri: str | Any = pyotp.TOTP(user.totp_secret).provisioning_uri(
+        name=user.email, issuer_name="CarteiraZen"
+    )
+    return totp_uri  # isso pode ser usado para gerar QR Code

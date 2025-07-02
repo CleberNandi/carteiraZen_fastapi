@@ -29,6 +29,10 @@ def test_auditoria_log_user_update():
         "name": "User Atualizado",
         "email": "auditado@example.com",
         "hashed_password": "hash123",
+        "totp_secret": None,
+        "is_active": True,
+        "is_superuser": True,
+        "is_2fa_enabled": False,
     }
     client.put(f"/api/v1/users/{user_id}?executor_id=2", json=update_data)
     # Consulta auditoria

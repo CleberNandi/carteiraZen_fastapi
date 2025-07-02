@@ -54,6 +54,10 @@ def test_update_user_auditoria():
         "name": "Primeiro Atualizado",
         "email": "primeiro@example.com",
         "hashed_password": "hash123",
+        "totp_secret": None,
+        "is_active": True,
+        "is_superuser": True,
+        "is_2fa_enabled": False,
     }
     resp = client.put(f"/api/v1/users/{user_id}?executor_id=2", json=update_data)
     assert resp.status_code == 200

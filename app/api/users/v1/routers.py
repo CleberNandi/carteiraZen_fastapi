@@ -1,12 +1,13 @@
 from typing import Any
 
+from core.dependencies import get_current_user
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.crud import user as crud_user
 from app.crud.user import UserCreationRequiresUserIdError
 from app.db.session import get_db
-from app.schemas.user import User, UserCreate
+from app.schemas.user import UserCreate, UserOut
 
 router = APIRouter()
 
@@ -16,37 +17,39 @@ def root() -> dict[str, str]:
     return {"message": "Hello, FastAPI!"}
 
 
-@router.get("/users/", response_model=list[User], tags=["Users"])
+@router.get("/users/", response_model=list[UserOut], tags=["Users"])
 def read_users(
     skip: int = 0,
     limit: int = 10,
     db: Session = Depends(get_db),  # noqa: B008
+    current_user: UserOut = Depends(get_current_user),  # noqa: B008
 ) -> list[Any]:
-    return crud_user.get_users(db, skip=skip, limit=limit)
+    users = crud_user.get_users(db, skip=skip, limit=limit)
+    return users
 
 
-@router.get("/users/{user_id}", response_model=User, tags=["Users"])
-def read_user(user_id: int, db: Session = Depends(get_db)) -> User:  # noqa: B008
+@router.get("/users/{user_id}", response_model=UserOut, tags=["Users"])
+def read_user(user_id: int, db: Session = Depends(get_db)) -> UserOut:  # noqa: B008
     db_user = crud_user.get_user(db, user_id=user_id)
     if db_user is None:
         raise HTTPException(status_code=404, detail="User not found")
     return db_user
 
 
-@router.get("/users/by-email/{email}", response_model=User, tags=["Users"])
-def read_user_by_email(email: str, db: Session = Depends(get_db)) -> User:  # noqa: B008
+@router.get("/users/by-email/{email}", response_model=UserOut, tags=["Users"])
+def read_user_by_email(email: str, db: Session = Depends(get_db)) -> UserOut:
     db_user = crud_user.get_user_by_email(db, email=email)
     if db_user is None:
         raise HTTPException(status_code=404, detail="User not found")
     return db_user
 
 
-@router.post("/users/", response_model=User, tags=["Users"])
+@router.post("/users/", response_model=UserOut, tags=["Users"])
 def create_user(
     user: UserCreate,
     user_id: int | None = None,
     db: Session = Depends(get_db),  # noqa: B008
-) -> User:
+) -> UserOut:
     db_user = crud_user.get_user_by_email(db, email=user.email)
     if db_user:
         raise HTTPException(status_code=400, detail="Email already registered")
@@ -58,13 +61,13 @@ def create_user(
         ) from e
 
 
-@router.put("/users/{user_id}", response_model=User, tags=["Users"])
+@router.put("/users/{user_id}", response_model=UserOut, tags=["Users"])
 def update_user(
     user_id: int,
     user: UserCreate,
     executor_id: int,  # id do usuário executor
     db: Session = Depends(get_db),  # noqa: B008
-) -> User:
+) -> UserOut:
     db_user = crud_user.update_user(
         db=db, user_id=user_id, user=user, executor_id=executor_id
     )

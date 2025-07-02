@@ -8,8 +8,12 @@ class UserBase(BaseModel):
 
 class UserCreate(UserBase):
     hashed_password: str
+    totp_secret: str | None
+    is_active: bool
+    is_superuser: bool
+    is_2fa_enabled: bool
 
 
-class User(UserBase):
+class UserOut(UserBase):
     id: int
     model_config = ConfigDict(from_attributes=True)
