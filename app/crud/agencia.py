@@ -64,7 +64,9 @@ def update_agencia(
         dados_depois=str(agencia.model_dump()),
     )
     db.add(auditoria)
+    db.flush()
     db.commit()
+    db.refresh(auditoria)
     return db_agencia
 
 

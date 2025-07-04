@@ -1,6 +1,7 @@
 from typing import Any
 
 import pyotp
+from sqlalchemy.orm import Session
 
 from app.core.security import get_password_hash
 from app.models.user import User
@@ -30,7 +31,7 @@ def user_data_2() -> dict[str, Any]:
     }
 
 
-def create_user_without_2fa(get_db):
+def create_user_without_2fa(get_db: Session):
     user = User(
         name="Usuário Sem 2FA",
         email="sem2fa@example.com",
@@ -44,7 +45,7 @@ def create_user_without_2fa(get_db):
     return user
 
 
-def create_user_with_2fa(get_db):
+def create_user_with_2fa(get_db: Session):
     secret = pyotp.random_base32()
     user = User(
         name="Usuário Com 2FA",

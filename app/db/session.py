@@ -8,7 +8,7 @@ import app.models  # type: ignore # noqa: F401  # Importa todos os models para r
 from app.db.base import Base
 
 SQLALCHEMY_DATABASE_URL = (
-    "sqlite:///:memory:"
+    "sqlite:///./sql_app_test.db"
     if os.getenv("PYTEST_CURRENT_TEST")
     else os.getenv("DATABASE_URL", "sqlite:///./sql_app.db")
 )

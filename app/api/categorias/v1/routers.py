@@ -1,0 +1,61 @@
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.orm import Session
+
+from app.crud.categoria import (
+    create_categoria,
+    delete_categoria,
+    get_categoria,
+    get_categorias,
+    update_categoria,
+)
+from app.db.session import get_db
+from app.schemas.categoria import CategoriaCreate, CategoriaRead, CategoriaUpdate
+
+router = APIRouter(prefix="/categorias", tags=["Categorias"])
+
+
+@router.post("/", response_model=CategoriaRead)
+def create(
+    categoria: CategoriaCreate,
+    db: Session = Depends(get_db),  # noqa: B008
+) -> CategoriaRead:
+    return create_categoria(db, categoria)
+
+
+@router.get("/", response_model=list[CategoriaRead])
+def read_all(
+    skip: int = 0,
+    limit: int = 100,
+    db: Session = Depends(get_db),  # noqa: B008
+) -> list[CategoriaRead]:
+    categorias = get_categorias(db, skip=skip, limit=limit)
+    return [CategoriaRead.model_validate(c) for c in categorias]
+
+
+@router.get("/{categoria_id}", response_model=CategoriaRead)
+def read(
+    categoria_id: int,
+    db: Session = Depends(get_db),  # noqa: B008
+) -> CategoriaRead:
+    categoria = get_categoria(db, categoria_id)
+    if not categoria:
+        raise HTTPException(status_code=404, detail="Categoria não encontrada")
+    return categoria
+
+
+@router.put("/{categoria_id}", response_model=CategoriaRead)
+def update(
+    categoria_id: int,
+    categoria: CategoriaUpdate,
+    db: Session = Depends(get_db),  # noqa: B008
+) -> CategoriaRead:
+    updated = update_categoria(db, categoria_id, categoria)
+    if not updated:
+        raise HTTPException(status_code=404, detail="Categoria não encontrada")
+    return updated
+
+
+@router.delete("/{categoria_id}", status_code=204)
+def delete(categoria_id: int, db: Session = Depends(get_db)) -> None:  # noqa: B008
+    if not delete_categoria(db, categoria_id):
+        raise HTTPException(status_code=404, detail="Categoria não encontrada")
