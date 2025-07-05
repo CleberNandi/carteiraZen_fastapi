@@ -1,6 +1,6 @@
 # Makefile para projeto FastAPI
 
-.PHONY: run dev test lint format install up clean-docker
+.PHONY: run dev test lint format install up clean-docker commit
 
 # Instala as dependências do projeto e hooks do pre-commit
 install:
@@ -54,3 +54,9 @@ backup-db:
 # Restore do banco Postgres do arquivo backup.sql para o container db
 restore-db:
 	cat backup.sql | docker exec -i db psql -U $$POSTGRES_USER $$POSTGRES_DB
+
+commit:
+	@git commit -m "$(msg)"
+
+push:
+	@git push
