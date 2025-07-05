@@ -9,14 +9,24 @@ class TipoTransacaoEnum(str, enum.Enum):
     receita = "receita"
 
 
+class FormaPagamentoEnum(str, enum.Enum):
+    pix = "pix"
+    debito = "debito"
+    dinheiro = "dinheiro"
+    boleto = "boleto"
+    cartao_credito = "cartao_credito"
+
+
 class TransacaoBase(BaseModel):
     descricao: str
     valor: float
     data: date
     tipo: TipoTransacaoEnum
     categoria_id: int
-    conta_id: int
+    conta_origem_id: int
+    forma_pagamento: FormaPagamentoEnum
     fatura_id: int | None = None
+    user_id: int | None = None
     model_config = ConfigDict(from_attributes=True)
 
 
@@ -30,7 +40,7 @@ class TransacaoUpdate(BaseModel):
     data: date | None = None
     tipo: TipoTransacaoEnum | None = None
     categoria_id: int | None = None
-    conta_id: int | None = None
+    conta_origem_id: int | None = None
     fatura_id: int | None = None
     model_config = ConfigDict(from_attributes=True)
 

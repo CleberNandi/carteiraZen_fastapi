@@ -2,12 +2,20 @@
 ENV = "dev"
 PROJECT_NAME = "CarteiraZen"
 VERSION = "0.1.0"
+BASE_URL = "app"
 
 [dev]
 ENV = "dev"
+DATABASE_URL = "sqlite:///./sql_app.db"
 
 [hml]
 ENV = "hml"
+DATABASE_URL = "sqlite:///./sql_app.db"
 
 [prod]
 ENV = "prod"
+DATABASE_URL = "postgresql://postgres:postgres@db:5432/postgres"
+
+[test]
+ENV = "test"
+DATABASE_URL = "sqlite:///./sql_app_test.db"

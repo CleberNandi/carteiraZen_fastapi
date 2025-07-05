@@ -40,7 +40,7 @@ class Transacao(Base):
     ativo: Mapped[bool] = mapped_column(default=True)
     created_at: Mapped[datetime] = mapped_column(server_default=func.now())
     created_by: Mapped[int] = mapped_column(nullable=True)
-    updated_at: Mapped[datetime] = mapped_column(onupdate=func.now())
+    updated_at: Mapped[datetime] = mapped_column(onupdate=func.now(), nullable=True)
     updated_by: Mapped[int] = mapped_column(nullable=True)
     deleted_at: Mapped[datetime] = mapped_column(nullable=True)
     deleted_by: Mapped[int] = mapped_column(nullable=True)

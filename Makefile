@@ -8,16 +8,19 @@ install:
 
 # Inicia o servidor FastAPI em modo desenvolvimento com recarregamento automático
 run:
-	uv run uvicorn app.main:app --reload
+	ENV_MODE=prod uv run uvicorn app.main:app --host 0.0.0.0 --port 8000  --reload
 
 # Inicia o servidor FastAPI em modo desenvolvimento, recarregando ao alterar arquivos em app/
 dev:
-	uv run uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload --reload-include app/*
+	ENV_MODE=dev uv run uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
+hml:
+	ENV_MODE=hml uv run uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 
 # Executa os testes automatizados com pytest, garantindo que o diretório app seja encontrado
 # pelo Python (PYTHONPATH=.)
 test:
-	PYTHONPATH=. pytest
+	ENV_MODE=test PYTHONPATH=. pytest
 
 # Executa o linter Ruff para verificar problemas de estilo e código em app e tests
 lint:

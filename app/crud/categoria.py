@@ -5,7 +5,9 @@ from app.models.categoria import Categoria
 from app.schemas.categoria import CategoriaCreate, CategoriaRead, CategoriaUpdate
 
 
-def create_categoria(db: Session, categoria: CategoriaCreate) -> CategoriaRead:
+def create_categoria(
+    db: Session, categoria: CategoriaCreate, user_id: int
+) -> CategoriaRead:
     db_categoria = Categoria(**categoria.model_dump())
     db.add(db_categoria)
     db.commit()
@@ -22,7 +24,7 @@ def get_categorias(db: Session, skip: int = 0, limit: int = 100) -> list[Categor
 
 
 def update_categoria(
-    db: Session, categoria_id: int, categoria: CategoriaUpdate
+    db: Session, categoria_id: int, categoria: CategoriaUpdate, user_id: int
 ) -> Categoria | None:
     db_categoria = get_categoria(db, categoria_id)
     if not db_categoria:

@@ -5,13 +5,11 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
 
 import app.models  # type: ignore # noqa: F401  # Importa todos os models para registrar no metadata
+from app.core.config import config
 from app.db.base import Base
 
-SQLALCHEMY_DATABASE_URL = (
-    "sqlite:///./sql_app_test.db"
-    if os.getenv("PYTEST_CURRENT_TEST")
-    else os.getenv("DATABASE_URL", "sqlite:///./sql_app.db")
-)
+SQLALCHEMY_DATABASE_URL = config.DATABASE_URL
+
 
 engine = create_engine(
     SQLALCHEMY_DATABASE_URL,
@@ -20,6 +18,9 @@ engine = create_engine(
     else {},
 )
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+print(f"Ambiente ativo: {config.ENV}")
+print(f"URL do banco: {config.DATABASE_URL}")
 
 
 # Cria as tabelas no SQLite em memória durante os testes
