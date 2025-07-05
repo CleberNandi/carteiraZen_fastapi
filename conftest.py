@@ -1,5 +1,7 @@
 # em conftest.py
+import os
 from collections.abc import Generator
+from typing import Any
 
 import pytest
 from sqlalchemy.orm import Session
@@ -16,3 +18,11 @@ def db_session() -> Generator[Session]:
     finally:
         db.close()
         Base.metadata.drop_all(bind=engine)
+
+
+@pytest.fixture(scope="session", autouse=True)
+def cleanup_test_db() -> Generator[Any]:
+    yield  # Isso permite que os testes sejam executados
+    # Código para remover o banco de dados de teste
+    if os.path.exists("sql_app_test.db"):
+        os.remove("sql_app_test.db")
