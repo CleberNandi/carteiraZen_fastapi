@@ -1,24 +1,18 @@
-from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String, func
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base
+from app.models.mixins import AuditMixin
 
 
-class Banco(Base):
+class Banco(Base, AuditMixin):
     __tablename__ = "bancos"
-    id = Column(Integer, primary_key=True, index=True)
-    nome = Column(String, nullable=False, unique=True, index=True)
-    codigo = Column(String, nullable=False, unique=True, index=True)
-    ispb = Column(String, nullable=True, unique=True, index=True)
-    cnpj = Column(String, nullable=True, unique=True, index=True)
-    site = Column(String, nullable=True)
-    ativo = Column(Boolean, default=True)
-    # Auditoria
-    created_by = Column(Integer, ForeignKey("users.id"), nullable=True)
-    created_at = Column(DateTime, server_default=func.now())
-    updated_by = Column(Integer, ForeignKey("users.id"), nullable=True)
-    updated_at = Column(DateTime, onupdate=func.now())
-    deleted_by = Column(Integer, ForeignKey("users.id"), nullable=True)
-    deleted_at = Column(DateTime, nullable=True)
+
+    id: Mapped[int] = mapped_column(primary_key=True, index=True)
+    nome: Mapped[str] = mapped_column(nullable=False, unique=True, index=True)
+    codigo: Mapped[str] = mapped_column(nullable=False, unique=True, index=True)
+    ispb: Mapped[str] = mapped_column(nullable=True, unique=True, index=True)
+    cnpj: Mapped[str] = mapped_column(nullable=True, unique=True, index=True)
+    site: Mapped[str] = mapped_column(nullable=True)
+    ativo: Mapped[bool] = mapped_column(default=True)
 
     agencias = relationship("Agencia", back_populates="banco")

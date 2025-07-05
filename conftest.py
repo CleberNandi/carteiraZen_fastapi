@@ -6,7 +6,8 @@ from typing import Any
 import pytest
 from sqlalchemy.orm import Session
 
-from app.db.session import Base, SessionLocal, engine
+from app.db.base import Base
+from app.db.session import SessionLocal, engine
 
 
 @pytest.fixture(scope="function")

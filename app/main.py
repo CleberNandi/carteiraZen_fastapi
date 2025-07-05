@@ -14,7 +14,8 @@ from app.api.faturas.v1.routers import router as faturas_router
 from app.api.transacoes.v1.routers import router as transacoes_router
 from app.api.users.v1.routers import router as users_router
 from app.core.config import config
-from app.db.session import Base, engine
+from app.db.base import Base
+from app.db.session import engine
 
 # Adiciona o seed completo na inicialização
 from app.scripts.seed_all import seed_all

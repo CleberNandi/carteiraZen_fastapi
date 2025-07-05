@@ -1,10 +1,11 @@
 import enum
 from datetime import UTC, datetime
 
-from sqlalchemy import Enum, ForeignKey, String, func
+from sqlalchemy import Enum, ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base
+from app.models.mixins import AuditMixin
 
 
 class FormaPagamentoEnum(str, enum.Enum):
@@ -20,7 +21,7 @@ class TipoTransacaoEnum(str, enum.Enum):
     saida = "saida"
 
 
-class Transacao(Base):
+class Transacao(Base, AuditMixin):
     __tablename__ = "transacoes"
 
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
@@ -38,12 +39,6 @@ class Transacao(Base):
     )
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
     ativo: Mapped[bool] = mapped_column(default=True)
-    created_at: Mapped[datetime] = mapped_column(server_default=func.now())
-    created_by: Mapped[int] = mapped_column(nullable=True)
-    updated_at: Mapped[datetime] = mapped_column(onupdate=func.now(), nullable=True)
-    updated_by: Mapped[int] = mapped_column(nullable=True)
-    deleted_at: Mapped[datetime] = mapped_column(nullable=True)
-    deleted_by: Mapped[int] = mapped_column(nullable=True)
 
     conta_origem = relationship("ContaCorrente")
     categoria = relationship("Categoria")

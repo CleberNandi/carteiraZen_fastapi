@@ -2,31 +2,31 @@ from datetime import UTC, datetime
 
 from sqlalchemy.orm import Session
 
-from app.models.agencia import Agencia as AgenciaModel
+from app.models.agencia import Agencia as AgenciaModels
 from app.models.auditoria import Auditoria
 from app.schemas.agencia import AgenciaCreate
 
 
-def get_agencia(db: Session, agencia_id: int) -> AgenciaModel | None:
+def get_agencia(db: Session, agencia_id: int) -> AgenciaModels | None:
     return (
-        db.query(AgenciaModel)
-        .filter(AgenciaModel.id == agencia_id, AgenciaModel.deleted_at.is_(None))
+        db.query(AgenciaModels)
+        .filter(AgenciaModels.id == agencia_id, AgenciaModels.deleted_at.is_(None))
         .first()
     )
 
 
-def get_agencias(db: Session, skip: int = 0, limit: int = 100) -> list[AgenciaModel]:
+def get_agencias(db: Session, skip: int = 0, limit: int = 100) -> list[AgenciaModels]:
     return (
-        db.query(AgenciaModel)
-        .filter(AgenciaModel.deleted_at.is_(None))
+        db.query(AgenciaModels)
+        .filter(AgenciaModels.deleted_at.is_(None))
         .offset(skip)
         .limit(limit)
         .all()
     )
 
 
-def create_agencia(db: Session, agencia: AgenciaCreate, user_id: int) -> AgenciaModel:
-    db_agencia = AgenciaModel(**agencia.model_dump(), created_by=user_id)
+def create_agencia(db: Session, agencia: AgenciaCreate, user_id: int) -> AgenciaModels:
+    db_agencia = AgenciaModels(**agencia.model_dump(), created_by=user_id)
     db.add(db_agencia)
     db.commit()
     db.refresh(db_agencia)
@@ -44,7 +44,7 @@ def create_agencia(db: Session, agencia: AgenciaCreate, user_id: int) -> Agencia
 
 def update_agencia(
     db: Session, agencia_id: int, agencia: AgenciaCreate, user_id: int
-) -> AgenciaModel | None:
+) -> AgenciaModels | None:
     db_agencia = get_agencia(db, agencia_id)
     if db_agencia is None:
         return None

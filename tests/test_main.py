@@ -1,6 +1,7 @@
 from fastapi.testclient import TestClient
 
-from app.db.session import Base, engine
+from app.db.base import Base
+from app.db.session import engine
 from app.main import app
 
 client = TestClient(app)

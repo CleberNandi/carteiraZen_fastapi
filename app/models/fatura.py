@@ -1,12 +1,11 @@
-from datetime import datetime
-
-from sqlalchemy import ForeignKey, func
+from sqlalchemy import ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base
+from app.models.mixins import AuditMixin
 
 
-class FaturaCartaoCredito(Base):
+class FaturaCartaoCredito(Base, AuditMixin):
     __tablename__ = "faturas"
 
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
@@ -17,12 +16,6 @@ class FaturaCartaoCredito(Base):
     status: Mapped[str] = mapped_column(default="aberta")  # aberta, fechada, paga
     ativo: Mapped[bool] = mapped_column(default=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
-    created_at: Mapped[datetime] = mapped_column(server_default=func.now())
-    created_by: Mapped[int] = mapped_column(nullable=True)
-    updated_at: Mapped[datetime] = mapped_column(onupdate=func.now())
-    updated_by: Mapped[int] = mapped_column(nullable=True)
-    deleted_at: Mapped[datetime] = mapped_column(nullable=True)
-    deleted_by: Mapped[int] = mapped_column(nullable=True)
 
     cartao = relationship("Cartao")
     transacoes = relationship("Transacao", back_populates="fatura")
