@@ -13,8 +13,9 @@ router = APIRouter(prefix="/faturas", tags=["Faturas"])
 def create_fatura(
     fatura: FaturaCreate,
     db: Session = Depends(get_db),  # noqa: B008
+    user_id: int = 1,  # Default user_id for testing, replace with actual user context
 ) -> FaturaRead:
-    return crud_fatura.create_fatura(db, fatura)
+    return crud_fatura.create_fatura(db, fatura, user_id)
 
 
 @router.get("/", response_model=list[FaturaRead])

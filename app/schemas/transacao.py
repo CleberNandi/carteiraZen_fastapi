@@ -5,8 +5,8 @@ from pydantic import BaseModel, ConfigDict
 
 
 class TipoTransacaoEnum(str, enum.Enum):
-    despesa = "despesa"
-    receita = "receita"
+    entrada = "entrada"
+    saida = "saida"
 
 
 class FormaPagamentoEnum(str, enum.Enum):

@@ -7,31 +7,35 @@ from app.schemas.fatura import FaturaCreate, FaturaUpdate
 FaturaCartaoCredito = models.FaturaCartaoCredito
 
 
-def create_fatura(db: Session, fatura: FaturaCreate) -> FaturaCartaoCredito:
-    db_fatura = FaturaCartaoCredito(**fatura.model_dump())
+def create_fatura(db: Session, fatura: FaturaCreate, user_id: int) -> FaturaCartaoCredito:
+    db_fatura = FaturaCartaoCredito(**fatura.model_dump(), user_id=user_id)
     db.add(db_fatura)
     db.commit()
     db.refresh(db_fatura)
+    # Auditoria
+    from app import models
+
+    auditoria = models.Auditoria(
+        tabela="faturas",
+        registro_id=db_fatura.id,
+        acao="create",
+        user_id=user_id,
+        dados_depois=str(fatura.model_dump()),
+    )
+    db.add(auditoria)
+    db.commit()
     return db_fatura
 
 
 def get_fatura(db: Session, fatura_id: int) -> FaturaCartaoCredito | None:
-    return (
-        db.query(FaturaCartaoCredito)
-        .filter(FaturaCartaoCredito.id == fatura_id)
-        .first()
-    )
+    return db.query(FaturaCartaoCredito).filter(FaturaCartaoCredito.id == fatura_id).first()
 
 
-def get_faturas(
-    db: Session, skip: int = 0, limit: int = 100
-) -> list[FaturaCartaoCredito]:
+def get_faturas(db: Session, skip: int = 0, limit: int = 100) -> list[FaturaCartaoCredito]:
     return db.query(FaturaCartaoCredito).offset(skip).limit(limit).all()
 
 
-def update_fatura(
-    db: Session, fatura_id: int, fatura: FaturaUpdate
-) -> FaturaCartaoCredito | None:
+def update_fatura(db: Session, fatura_id: int, fatura: FaturaUpdate) -> FaturaCartaoCredito | None:
     db_fatura = get_fatura(db, fatura_id)
     if not db_fatura:
         return None

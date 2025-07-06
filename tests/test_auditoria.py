@@ -42,3 +42,36 @@ def test_auditoria_filtro_user():
     assert resp.status_code == 200
     auditorias = resp.json()
     assert all(aud["user_id"] == 2 for aud in auditorias)
+
+
+def test_auditoria_log_banco_update_delete():
+    # Cria banco
+    resp = client.post(
+        "/api/v1/bancos/?user_id=1", json={"nome": "Banco Update", "codigo": "upd"}
+    )
+    banco_id = resp.json()["id"]
+    # Atualiza banco
+    client.put(
+        f"/api/v1/bancos/{banco_id}?user_id=1",
+        json={"nome": "Banco Atualizado", "codigo": "upd"},
+    )
+    # Deleta banco
+    client.delete(f"/api/v1/bancos/{banco_id}?user_id=1")
+    # Consulta auditoria para update e delete
+    resp = client.get("/api/v1/auditoria/?tabela=bancos&acao=update")
+    assert resp.status_code == 200
+    auditorias = resp.json()
+    assert any(aud["acao"] == "update" for aud in auditorias)
+    resp = client.get("/api/v1/auditoria/?tabela=bancos&acao=delete")
+    assert resp.status_code == 200
+    auditorias = resp.json()
+    assert any(aud["acao"] == "delete" for aud in auditorias)
+
+
+def test_auditoria_invalid_filter():
+    resp = client.get("/api/v1/auditoria/?acao=invalid")
+    assert resp.status_code == 200
+    auditorias = resp.json()
+    # Expecting no results for invalid filter
+    assert isinstance(auditorias, list)
+    assert len(auditorias) == 0

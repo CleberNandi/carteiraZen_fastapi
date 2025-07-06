@@ -13,8 +13,9 @@ router = APIRouter(prefix="/transacoes", tags=["Transações"])
 def create_transacao(
     transacao: TransacaoCreate,
     db: Session = Depends(get_db),  # noqa: B008
+    user_id: int = 1,  # Default user_id for testing, replace with actual user context
 ) -> TransacaoCreate:
-    return crud_transacao.create_transacao(db, transacao)
+    return crud_transacao.create_transacao(db, transacao, user_id)
 
 
 @router.get("/", response_model=list[TransacaoRead])

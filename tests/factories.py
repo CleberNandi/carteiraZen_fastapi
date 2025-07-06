@@ -1,3 +1,5 @@
+import random
+import string
 from typing import Any
 
 import pyotp
@@ -47,9 +49,13 @@ def create_user_without_2fa(get_db: Session):
 
 def create_user_with_2fa(get_db: Session):
     secret = pyotp.random_base32()
+    random_suffix = "".join(
+        random.SystemRandom().choices(string.ascii_lowercase + string.digits, k=6)
+    )
+    email = f"com2fa_{random_suffix}@example.com"
     user = User(
         name="Usuário Com 2FA",
-        email="com2fa@example.com",
+        email=email,
         hashed_password=get_password_hash("senha123"),
         is_2fa_enabled=True,
         totp_secret=secret,

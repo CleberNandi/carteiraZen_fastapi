@@ -23,7 +23,7 @@ def login(
     user = db.query(User).filter(User.email == request.email).first()
 
     if not user or not verify_password(request.password, user.hashed_password):
-        raise HTTPException(status_code=400, detail="Credenciais inválidas")
+        raise HTTPException(status_code=401, detail="Credenciais inválidas")
 
     if user.is_2fa_enabled:
         if not request.totp_token:

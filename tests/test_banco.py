@@ -1,3 +1,5 @@
+from typing import Any
+
 import pytest
 from fastapi.testclient import TestClient
 
@@ -50,19 +52,9 @@ def test_get_bancos():
     client.post("/api/v1/bancos/?user_id=1", json={"nome": "Banco 2", "codigo": "102"})
     response = client.get("/api/v1/bancos/")
     assert response.status_code == 200
-    bancos = response.json()
+    bancos: list[Any] = response.json()
     assert isinstance(bancos, list)
     assert len(bancos) >= 2
-
-
-def test_get_banco_by_id():
-    resp = client.post(
-        "/api/v1/bancos/?user_id=1", json={"nome": "Banco Unico", "codigo": "888"}
-    )
-    banco_id = resp.json()["id"]
-    response = client.get(f"/api/v1/bancos/{banco_id}")
-    assert response.status_code == 200
-    assert response.json()["id"] == banco_id
 
 
 def test_get_banco_not_found():
@@ -92,3 +84,53 @@ def test_delete_banco():
     assert response.status_code in (200, 204)
     get_resp = client.get(f"/api/v1/bancos/{banco_id}")
     assert get_resp.status_code == 404
+
+
+def test_create_banco_invalid_data():
+    # Missing required field 'nome'
+    data = {"codigo": "000"}
+    resp = client.post("/api/v1/bancos/?user_id=1", json=data)
+    assert resp.status_code == 422
+
+
+def test_update_banco_not_found():
+    update_data = {"nome": "Não Existe", "codigo": "999"}
+    resp = client.put("/api/v1/bancos/99999?user_id=1", json=update_data)
+    assert resp.status_code == 404
+
+
+def test_delete_banco_not_found():
+    resp = client.delete("/api/v1/bancos/99999?user_id=1")
+    assert resp.status_code == 404
+
+
+def test_get_bancos_list():
+    client.post("/api/v1/bancos/?user_id=1", json={"nome": "Banco 1", "codigo": "101"})
+    client.post("/api/v1/bancos/?user_id=1", json={"nome": "Banco 2", "codigo": "102"})
+    resp = client.get("/api/v1/bancos/")
+    assert resp.status_code == 200
+    bancos: list[Any] = resp.json()
+    assert isinstance(bancos, list)
+    assert len(bancos) >= 2
+
+
+def test_get_banco_by_id():
+    resp = client.post(
+        "/api/v1/bancos/?user_id=1", json={"nome": "Banco Unico", "codigo": "888"}
+    )
+    banco_id = resp.json()["id"]
+    resp = client.get(f"/api/v1/bancos/{banco_id}")
+    assert resp.status_code == 200
+    assert resp.json()["id"] == banco_id
+
+
+def test_create_banco_auditoria():
+    data = {"nome": "Banco Auditoria", "codigo": "777"}
+    resp = client.post("/api/v1/bancos/?user_id=1", json=data)
+    assert resp.status_code == 200
+    aud_resp = client.get("/api/v1/auditoria/?tabela=bancos&acao=create")
+    assert aud_resp.status_code == 200
+    auditorias = aud_resp.json()
+    assert any(
+        aud["tabela"] == "bancos" and aud["acao"] == "create" for aud in auditorias
+    )
