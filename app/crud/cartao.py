@@ -2,39 +2,41 @@ from datetime import UTC, datetime
 
 from sqlalchemy.orm import Session
 
-from app.models.auditoria import Auditoria
-from app.models.cartao import Cartao as CartaoModel
+from app import models
 from app.schemas.cartao import CartaoCreate
 
+Auditoria = models.Auditoria
+Cartao = models.Cartao
 
-def get_cartao(db: Session, cartao_id: int) -> CartaoModel | None:
+
+def get_cartao(db: Session, cartao_id: int) -> Cartao | None:
     return (
-        db.query(CartaoModel)
-        .filter(CartaoModel.id == cartao_id, CartaoModel.deleted_at.is_(None))
+        db.query(Cartao)
+        .filter(Cartao.id == cartao_id, Cartao.deleted_at.is_(None))
         .first()
     )
 
 
-def get_cartao_by_codigo(db: Session, codigo: str) -> CartaoModel | None:
+def get_cartao_by_codigo(db: Session, codigo: str) -> Cartao | None:
     return (
-        db.query(CartaoModel)
-        .filter(CartaoModel.codigo == codigo, CartaoModel.deleted_at.is_(None))
+        db.query(Cartao)
+        .filter(Cartao.codigo == codigo, Cartao.deleted_at.is_(None))
         .first()
     )
 
 
-def get_cartoes(db: Session, skip: int = 0, limit: int = 100) -> list[CartaoModel]:
+def get_cartoes(db: Session, skip: int = 0, limit: int = 100) -> list[Cartao]:
     return (
-        db.query(CartaoModel)
-        .filter(CartaoModel.deleted_at.is_(None))
+        db.query(Cartao)
+        .filter(Cartao.deleted_at.is_(None))
         .offset(skip)
         .limit(limit)
         .all()
     )
 
 
-def create_cartao(db: Session, cartao: CartaoCreate, user_id: int) -> CartaoModel:
-    db_cartao = CartaoModel(**cartao.model_dump(), created_by=user_id)
+def create_cartao(db: Session, cartao: CartaoCreate, user_id: int) -> Cartao:
+    db_cartao = Cartao(**cartao.model_dump(), created_by=user_id)
     db.add(db_cartao)
     db.commit()
     db.refresh(db_cartao)
@@ -53,7 +55,7 @@ def create_cartao(db: Session, cartao: CartaoCreate, user_id: int) -> CartaoMode
 
 def update_cartao(
     db: Session, cartao_id: int, cartao: CartaoCreate, user_id: int
-) -> CartaoModel | None:
+) -> Cartao | None:
     db_cartao = get_cartao(db, cartao_id)
     if db_cartao is None:
         return None

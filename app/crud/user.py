@@ -1,11 +1,14 @@
 from typing import Any
 
+import pyotp
 from core.security import gerar_totp_secret, get_password_hash
 from sqlalchemy.orm import Session
 
-from app.models.auditoria import Auditoria
-from app.models.user import User as UserModel
+from app import models
 from app.schemas.user import UserCreate
+
+Auditoria = models.Auditoria
+User = models.User
 
 
 class UserCreationRequiresUserIdError(Exception):
@@ -13,30 +16,30 @@ class UserCreationRequiresUserIdError(Exception):
 
 
 # Função para buscar usuário por ID
-def get_user(db: Session, user_id: int) -> UserModel | None:
-    return db.query(UserModel).filter(UserModel.id == user_id).first()
+def get_user(db: Session, user_id: int) -> User | None:
+    return db.query(User).filter(User.id == user_id).first()
 
 
 # Função para buscar usuário por email
-def get_user_by_email(db: Session, email: str) -> UserModel | None:
-    return db.query(UserModel).filter(UserModel.email == email).first()
+def get_user_by_email(db: Session, email: str) -> User | None:
+    return db.query(User).filter(User.email == email).first()
 
 
 # Função para listar usuários com paginação
-def get_users(db: Session, skip: int = 0, limit: int = 10) -> list[UserModel]:
-    return db.query(UserModel).offset(skip).limit(limit).all()
+def get_users(db: Session, skip: int = 0, limit: int = 10) -> list[User]:
+    return db.query(User).offset(skip).limit(limit).all()
 
 
 # Função para criar usuário
-def create_user(db: Session, user: UserCreate, user_id: int | None = None) -> UserModel:
+def create_user(db: Session, user: UserCreate, user_id: int | None = None) -> User:
     # Permite user_id ausente apenas se não houver usuários
-    total_users = db.query(UserModel).count()
+    total_users = db.query(User).count()
     if total_users > 0 and user_id is None:
         msg = (
             "user_id é obrigatório para criar novos usuários após o primeiro cadastro."
         )
         raise UserCreationRequiresUserIdError(msg)
-    db_user = UserModel(
+    db_user = User(
         name=user.name,
         email=user.email,
         hashed_password=get_password_hash(user.hashed_password),
@@ -63,7 +66,7 @@ def create_user(db: Session, user: UserCreate, user_id: int | None = None) -> Us
 
 def update_user(
     db: Session, user_id: int, user: UserCreate, executor_id: int
-) -> UserModel | None:
+) -> User | None:
     db_user = get_user(db, user_id)
     if db_user is None:
         return None
@@ -108,7 +111,7 @@ def delete_user(db: Session, user_id: int, executor_id: int) -> bool:
     return True
 
 
-def ativar_2fa_para_usuario(user: UserModel, db: Session):
+def ativar_2fa_para_usuario(user: User, db: Session) -> str:
     if not user.totp_secret:
         user.totp_secret = gerar_totp_secret()
     user.is_2fa_enabled = True
@@ -118,4 +121,5 @@ def ativar_2fa_para_usuario(user: UserModel, db: Session):
     totp_uri: str | Any = pyotp.TOTP(user.totp_secret).provisioning_uri(
         name=user.email, issuer_name="CarteiraZen"
     )
+
     return totp_uri  # isso pode ser usado para gerar QR Code

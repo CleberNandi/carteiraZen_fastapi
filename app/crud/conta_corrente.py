@@ -2,27 +2,27 @@ from datetime import UTC, datetime
 
 from sqlalchemy.orm import Session
 
-from app.models.auditoria import Auditoria
-from app.models.conta_corrente import ContaCorrente as ContaCorrenteModel
+from app import models
 from app.schemas.conta_corrente import ContaCorrenteCreate
 
+Auditoria = models.Auditoria
+ContaCorrente = models.ContaCorrente
 
-def get_conta_corrente(db: Session, conta_id: int) -> ContaCorrenteModel | None:
+
+def get_conta_corrente(db: Session, conta_id: int) -> ContaCorrente | None:
     return (
-        db.query(ContaCorrenteModel)
-        .filter(
-            ContaCorrenteModel.id == conta_id, ContaCorrenteModel.deleted_at.is_(None)
-        )
+        db.query(ContaCorrente)
+        .filter(ContaCorrente.id == conta_id, ContaCorrente.deleted_at.is_(None))
         .first()
     )
 
 
 def get_contas_correntes(
     db: Session, skip: int = 0, limit: int = 100
-) -> list[ContaCorrenteModel]:
+) -> list[ContaCorrente]:
     return (
-        db.query(ContaCorrenteModel)
-        .filter(ContaCorrenteModel.deleted_at.is_(None))
+        db.query(ContaCorrente)
+        .filter(ContaCorrente.deleted_at.is_(None))
         .offset(skip)
         .limit(limit)
         .all()
@@ -31,8 +31,8 @@ def get_contas_correntes(
 
 def create_conta_corrente(
     db: Session, conta: ContaCorrenteCreate, user_id: int
-) -> ContaCorrenteModel:
-    db_conta = ContaCorrenteModel(**conta.model_dump(), created_by=user_id)
+) -> ContaCorrente:
+    db_conta = ContaCorrente(**conta.model_dump(), created_by=user_id)
     db.add(db_conta)
     db.commit()
     db.refresh(db_conta)
@@ -50,7 +50,7 @@ def create_conta_corrente(
 
 def update_conta_corrente(
     db: Session, conta_id: int, conta: ContaCorrenteCreate, user_id: int
-) -> ContaCorrenteModel | None:
+) -> ContaCorrente | None:
     db_conta = get_conta_corrente(db, conta_id)
     if db_conta is None:
         return None

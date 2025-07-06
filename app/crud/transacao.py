@@ -1,8 +1,10 @@
 # app/crud/transacao.py
 from sqlalchemy.orm import Session
 
-from app.models.transacao import Transacao
+from app import models
 from app.schemas.transacao import TransacaoCreate, TransacaoUpdate
+
+Transacao = models.Transacao
 
 
 def create_transacao(db: Session, transacao: TransacaoCreate) -> Transacao:

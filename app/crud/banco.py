@@ -2,39 +2,39 @@ from datetime import UTC, datetime
 
 from sqlalchemy.orm import Session
 
-from app.models.auditoria import Auditoria
-from app.models.banco import Banco as BancoModel
+from app import models
 from app.schemas.banco import BancoCreate
 
+Auditoria = models.Auditoria
+Banco = models.Banco
 
-def get_banco(db: Session, banco_id: int) -> BancoModel | None:
+
+def get_banco(db: Session, banco_id: int) -> Banco | None:
     return (
-        db.query(BancoModel)
-        .filter(BancoModel.id == banco_id, BancoModel.deleted_at.is_(None))
+        db.query(Banco).filter(Banco.id == banco_id, Banco.deleted_at.is_(None)).first()
+    )
+
+
+def get_banco_by_codigo(db: Session, codigo: str) -> Banco | None:
+    return (
+        db.query(Banco)
+        .filter(Banco.codigo == codigo, Banco.deleted_at.is_(None))
         .first()
     )
 
 
-def get_banco_by_codigo(db: Session, codigo: str) -> BancoModel | None:
+def get_bancos(db: Session, skip: int = 0, limit: int = 100) -> list[Banco]:
     return (
-        db.query(BancoModel)
-        .filter(BancoModel.codigo == codigo, BancoModel.deleted_at.is_(None))
-        .first()
-    )
-
-
-def get_bancos(db: Session, skip: int = 0, limit: int = 100) -> list[BancoModel]:
-    return (
-        db.query(BancoModel)
-        .filter(BancoModel.deleted_at.is_(None))
+        db.query(Banco)
+        .filter(Banco.deleted_at.is_(None))
         .offset(skip)
         .limit(limit)
         .all()
     )
 
 
-def create_banco(db: Session, banco: BancoCreate, user_id: int) -> BancoModel:
-    db_banco = BancoModel(**banco.model_dump(), created_by=user_id)
+def create_banco(db: Session, banco: BancoCreate, user_id: int) -> Banco:
+    db_banco = Banco(**banco.model_dump(), created_by=user_id)
     db.add(db_banco)
     db.commit()
     db.refresh(db_banco)
@@ -53,7 +53,7 @@ def create_banco(db: Session, banco: BancoCreate, user_id: int) -> BancoModel:
 
 def update_banco(
     db: Session, banco_id: int, banco: BancoCreate, user_id: int
-) -> BancoModel | None:
+) -> Banco | None:
     db_banco = get_banco(db, banco_id)
     if db_banco is None:
         return None

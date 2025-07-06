@@ -1,8 +1,10 @@
 # app/crud/categoria.py
 from sqlalchemy.orm import Session
 
-from app.models.categoria import Categoria
+from app import models
 from app.schemas.categoria import CategoriaCreate, CategoriaRead, CategoriaUpdate
+
+Categoria = models.Categoria
 
 
 def create_categoria(

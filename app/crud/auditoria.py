@@ -2,7 +2,9 @@ from collections.abc import Sequence
 
 from sqlalchemy.orm import Session
 
-from app.models.auditoria import Auditoria as AuditoriaModel
+from app import models
+
+Auditoria = models.Auditoria
 
 
 def get_auditorias(
@@ -13,14 +15,14 @@ def get_auditorias(
     user_id: int | None = None,
     skip: int = 0,
     limit: int = 100,
-) -> Sequence[AuditoriaModel]:
-    query = db.query(AuditoriaModel)
+) -> Sequence[Auditoria]:
+    query = db.query(Auditoria)
     if tabela:
-        query = query.filter(AuditoriaModel.tabela == tabela)
+        query = query.filter(Auditoria.tabela == tabela)
     if registro_id:
-        query = query.filter(AuditoriaModel.registro_id == registro_id)
+        query = query.filter(Auditoria.registro_id == registro_id)
     if acao:
-        query = query.filter(AuditoriaModel.acao == acao)
+        query = query.filter(Auditoria.acao == acao)
     if user_id:
-        query = query.filter(AuditoriaModel.user_id == user_id)
-    return query.order_by(AuditoriaModel.data.desc()).offset(skip).limit(limit).all()
+        query = query.filter(Auditoria.user_id == user_id)
+    return query.order_by(Auditoria.data.desc()).offset(skip).limit(limit).all()

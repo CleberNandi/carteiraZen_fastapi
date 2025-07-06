@@ -6,15 +6,15 @@ BASE_URL = "app"
 
 [dev]
 ENV = "dev"
-DATABASE_URL = "sqlite:///./sql_app.db"
+DATABASE_URL = "postgresql+psycopg2://postgres:postgres@localhost:5432/carteirazen_db"
 
 [hml]
 ENV = "hml"
-DATABASE_URL = "sqlite:///./sql_app.db"
+DATABASE_URL = "postgresql+psycopg2://postgres:postgres@localhost:5432/carteirazen_db"
 
 [prod]
 ENV = "prod"
-DATABASE_URL = "postgresql://postgres:postgres@db:5432/postgres"
+DATABASE_URL = "postgresql+psycopg2://postgres:postgres@localhost:5432/carteirazen_db"
 
 [test]
 ENV = "test"

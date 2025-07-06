@@ -1,8 +1,10 @@
 # app/crud/fatura.py
 from sqlalchemy.orm import Session
 
-from app.models.fatura import FaturaCartaoCredito
+from app import models
 from app.schemas.fatura import FaturaCreate, FaturaUpdate
+
+FaturaCartaoCredito = models.FaturaCartaoCredito
 
 
 def create_fatura(db: Session, fatura: FaturaCreate) -> FaturaCartaoCredito:

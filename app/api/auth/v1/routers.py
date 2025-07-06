@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session
 
 from app.core.security import create_access_token, verify_password
 from app.db.session import get_db
-from app.models.user import User as UserModel
+from app.models.user import User as User
 from app.schemas.token import LoginRequest, Token
 
 router = APIRouter(tags=["auth"])
@@ -20,7 +20,7 @@ def login(
     request: LoginRequest,
     db: Session = Depends(get_db),  # noqa: B008
 ) -> dict[str, str]:
-    user = db.query(UserModel).filter(UserModel.email == request.email).first()
+    user = db.query(User).filter(User.email == request.email).first()
 
     if not user or not verify_password(request.password, user.hashed_password):
         raise HTTPException(status_code=400, detail="Credenciais inválidas")
@@ -39,7 +39,7 @@ def login(
 
 @router.post("/enable-2fa")
 def enable_2fa(
-    current_user: UserModel = Depends(get_current_user),  # noqa: B008
+    current_user: User = Depends(get_current_user),  # noqa: B008
     db: Session = Depends(get_db),  # noqa: B008
 ) -> StreamingResponse:
     if current_user.is_2fa_enabled:
