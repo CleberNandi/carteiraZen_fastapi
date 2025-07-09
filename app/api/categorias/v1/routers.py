@@ -1,3 +1,4 @@
+from core.dependencies import get_current_user
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
@@ -18,6 +19,7 @@ router = APIRouter(prefix="/categorias", tags=["Categorias"])
 def create(
     categoria: CategoriaCreate,
     user_id: int,
+    current_user: dict[str, str] = Depends(get_current_user),  # noqa: B008,
     db: Session = Depends(get_db),  # noqa: B008
 ) -> CategoriaRead:
     return create_categoria(db, categoria, user_id)
@@ -27,6 +29,7 @@ def create(
 def read_all(
     skip: int = 0,
     limit: int = 100,
+    current_user: dict[str, str] = Depends(get_current_user),  # noqa: B008,
     db: Session = Depends(get_db),  # noqa: B008
 ) -> list[CategoriaRead]:
     categorias = get_categorias(db, skip=skip, limit=limit)
@@ -36,6 +39,7 @@ def read_all(
 @router.get("/{categoria_id}", response_model=CategoriaRead)
 def read(
     categoria_id: int,
+    current_user: dict[str, str] = Depends(get_current_user),  # noqa: B008,
     db: Session = Depends(get_db),  # noqa: B008
 ) -> CategoriaRead:
     categoria = get_categoria(db, categoria_id)
@@ -49,6 +53,7 @@ def update(
     categoria_id: int,
     categoria: CategoriaUpdate,
     user_id: int,
+    current_user: dict[str, str] = Depends(get_current_user),  # noqa: B008,
     db: Session = Depends(get_db),  # noqa: B008
 ) -> CategoriaRead:
     updated = update_categoria(db, categoria_id, categoria, user_id)
@@ -58,6 +63,10 @@ def update(
 
 
 @router.delete("/{categoria_id}", status_code=204)
-def delete(categoria_id: int, db: Session = Depends(get_db)) -> None:  # noqa: B008
+def delete(
+    categoria_id: int,
+    current_user: dict[str, str] = Depends(get_current_user),  # noqa: B008,
+    db: Session = Depends(get_db),  # noqa: B008
+) -> None:
     if not delete_categoria(db, categoria_id):
         raise HTTPException(status_code=404, detail="Categoria não encontrada")

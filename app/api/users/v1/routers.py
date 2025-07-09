@@ -24,12 +24,16 @@ def read_users(
     db: Session = Depends(get_db),  # noqa: B008
     current_user: UserOut = Depends(get_current_user),  # noqa: B008
 ) -> list[Any]:
-    users = crud_user.get_users(db, skip=skip, limit=limit)
+    users: list[Any] = crud_user.get_users(db, skip=skip, limit=limit)
     return users
 
 
 @router.get("/users/{user_id}", response_model=UserOut, tags=["Users"])
-def read_user(user_id: int, db: Session = Depends(get_db)) -> UserOut:  # noqa: B008
+def read_user(
+    user_id: int,
+    current_user: dict[str, str] = Depends(get_current_user),  # noqa: B008,
+    db: Session = Depends(get_db),  # noqa: B008
+) -> UserOut:
     db_user = crud_user.get_user(db, user_id=user_id)
     if db_user is None:
         raise HTTPException(status_code=404, detail="User not found")
@@ -37,7 +41,11 @@ def read_user(user_id: int, db: Session = Depends(get_db)) -> UserOut:  # noqa: 
 
 
 @router.get("/users/by-email/{email}", response_model=UserOut, tags=["Users"])
-def read_user_by_email(email: str, db: Session = Depends(get_db)) -> UserOut:
+def read_user_by_email(
+    email: str,
+    current_user: dict[str, str] = Depends(get_current_user),  # noqa: B008,
+    db: Session = Depends(get_db),  # noqa: B008,
+) -> UserOut:
     db_user = crud_user.get_user_by_email(db, email=email)
     if db_user is None:
         raise HTTPException(status_code=404, detail="User not found")
@@ -48,6 +56,7 @@ def read_user_by_email(email: str, db: Session = Depends(get_db)) -> UserOut:
 def create_user(
     user: UserCreate,
     user_id: int | None = None,
+    current_user: dict[str, str] = Depends(get_current_user),  # noqa: B008,
     db: Session = Depends(get_db),  # noqa: B008
 ) -> UserOut:
     db_user = crud_user.get_user_by_email(db, email=user.email)
@@ -66,6 +75,7 @@ def update_user(
     user_id: int,
     user: UserCreate,
     executor_id: int,  # id do usuário executor
+    current_user: dict[str, str] = Depends(get_current_user),  # noqa: B008,
     db: Session = Depends(get_db),  # noqa: B008
 ) -> UserOut:
     db_user = crud_user.update_user(
@@ -80,6 +90,7 @@ def update_user(
 def delete_user(
     user_id: int,
     executor_id: int,  # id do usuário executor
+    current_user: dict[str, str] = Depends(get_current_user),  # noqa: B008,
     db: Session = Depends(get_db),  # noqa: B008
 ) -> dict[str, str]:
     sucesso = crud_user.delete_user(db=db, user_id=user_id, executor_id=executor_id)

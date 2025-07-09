@@ -1,5 +1,6 @@
 from collections.abc import Sequence
 
+from core.dependencies import get_current_user
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
@@ -20,6 +21,7 @@ router = APIRouter(prefix="/cartoes", tags=["Cartões"])
 def listar_cartoes(
     skip: int = 0,
     limit: int = 100,
+    current_user: dict[str, str] = Depends(get_current_user),  # noqa: B008,
     db: Session = Depends(get_db),  # noqa: B008
 ) -> Sequence[Cartao]:
     return get_cartoes(db, skip=skip, limit=limit)
@@ -28,6 +30,7 @@ def listar_cartoes(
 @router.get("/{cartao_id}", response_model=Cartao)
 def obter_cartao(
     cartao_id: int,
+    current_user: dict[str, str] = Depends(get_current_user),  # noqa: B008,
     db: Session = Depends(get_db),  # noqa: B008
 ) -> Cartao | None:
     cartao = get_cartao(db, cartao_id)
@@ -40,6 +43,7 @@ def obter_cartao(
 def criar_cartao(
     cartao: CartaoCreate,
     user_id: int = Query(...),
+    current_user: dict[str, str] = Depends(get_current_user),  # noqa: B008,
     db: Session = Depends(get_db),  # noqa: B008
 ) -> Cartao:
     return create_cartao(db, cartao, user_id)
@@ -50,6 +54,7 @@ def atualizar_cartao(
     cartao_id: int,
     agencia: CartaoCreate,
     executor_id: int = Query(...),
+    current_user: dict[str, str] = Depends(get_current_user),  # noqa: B008,
     db: Session = Depends(get_db),  # noqa: B008
 ) -> Cartao | None:
     cartao = update_cartao(db, cartao_id, agencia, executor_id)
@@ -62,6 +67,7 @@ def atualizar_cartao(
 def deletar_cartao(
     cartao_id: int,
     executor_id: int = Query(...),
+    current_user: dict[str, str] = Depends(get_current_user),  # noqa: B008,
     db: Session = Depends(get_db),  # noqa: B008
 ) -> dict[str, bool]:
     ok = delete_cartao(db, cartao_id, executor_id)

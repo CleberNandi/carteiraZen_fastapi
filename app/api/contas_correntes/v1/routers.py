@@ -1,5 +1,6 @@
 from collections.abc import Sequence
 
+from core.dependencies import get_current_user
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
@@ -20,6 +21,7 @@ router = APIRouter(prefix="/contas-correntes", tags=["Contas Correntes"])
 def listar_contas(
     skip: int = 0,
     limit: int = 100,
+    current_user: dict[str, str] = Depends(get_current_user),  # noqa: B008,
     db: Session = Depends(get_db),  # noqa: B008
 ) -> Sequence[ContaCorrente]:
     return get_contas_correntes(db, skip=skip, limit=limit)
@@ -28,6 +30,7 @@ def listar_contas(
 @router.get("/{conta_id}", response_model=ContaCorrente)
 def obter_conta(
     conta_id: int,
+    current_user: dict[str, str] = Depends(get_current_user),  # noqa: B008,
     db: Session = Depends(get_db),  # noqa: B008
 ) -> ContaCorrente | None:
     conta = get_conta_corrente(db, conta_id)
@@ -40,6 +43,7 @@ def obter_conta(
 def criar_conta(
     conta: ContaCorrenteCreate,
     user_id: int = Query(...),
+    current_user: dict[str, str] = Depends(get_current_user),  # noqa: B008,
     db: Session = Depends(get_db),  # noqa: B008
 ) -> ContaCorrente:
     return create_conta_corrente(db, conta, user_id)
@@ -50,6 +54,7 @@ def atualizar_conta(
     conta_id: int,
     conta: ContaCorrenteCreate,
     executor_id: int = Query(...),
+    current_user: dict[str, str] = Depends(get_current_user),  # noqa: B008,
     db: Session = Depends(get_db),  # noqa: B008
 ) -> ContaCorrente | None:
     c = update_conta_corrente(db, conta_id, conta, executor_id)
@@ -62,6 +67,7 @@ def atualizar_conta(
 def deletar_conta(
     conta_id: int,
     executor_id: int = Query(...),
+    current_user: dict[str, str] = Depends(get_current_user),  # noqa: B008,
     db: Session = Depends(get_db),  # noqa: B008
 ) -> dict[str, bool] | None:
     ok = delete_conta_corrente(db, conta_id, executor_id)

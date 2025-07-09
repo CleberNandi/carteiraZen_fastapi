@@ -1,4 +1,5 @@
 # app/api/v1/routes/fatura.py
+from core.dependencies import get_current_user
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
@@ -12,6 +13,7 @@ router = APIRouter(prefix="/faturas", tags=["Faturas"])
 @router.post("/", response_model=FaturaRead, status_code=status.HTTP_201_CREATED)
 def create_fatura(
     fatura: FaturaCreate,
+    current_user: dict[str, str] = Depends(get_current_user),  # noqa: B008,
     db: Session = Depends(get_db),  # noqa: B008
     user_id: int = 1,  # Default user_id for testing, replace with actual user context
 ) -> FaturaRead:
@@ -19,7 +21,10 @@ def create_fatura(
 
 
 @router.get("/", response_model=list[FaturaRead])
-def list_faturas(db: Session = Depends(get_db)) -> list[FaturaRead]:  # noqa: B008
+def list_faturas(
+    current_user: dict[str, str] = Depends(get_current_user),  # noqa: B008,
+    db: Session = Depends(get_db),  # noqa: B008
+) -> list[FaturaRead]:
     faturas = crud_fatura.get_faturas(db)
     return [FaturaRead.model_validate(c) for c in faturas]
 
@@ -27,6 +32,7 @@ def list_faturas(db: Session = Depends(get_db)) -> list[FaturaRead]:  # noqa: B0
 @router.get("/{fatura_id}", response_model=FaturaRead)
 def get_fatura(
     fatura_id: int,
+    current_user: dict[str, str] = Depends(get_current_user),  # noqa: B008,
     db: Session = Depends(get_db),  # noqa: B008
 ) -> FaturaRead:
     db_fatura = crud_fatura.get_fatura(db, fatura_id)
@@ -39,6 +45,7 @@ def get_fatura(
 def update_fatura(
     fatura_id: int,
     fatura: FaturaUpdate,
+    current_user: dict[str, str] = Depends(get_current_user),  # noqa: B008,
     db: Session = Depends(get_db),  # noqa: B008
 ) -> FaturaRead:
     updated = crud_fatura.update_fatura(db, fatura_id, fatura)
@@ -48,7 +55,11 @@ def update_fatura(
 
 
 @router.delete("/{fatura_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_fatura(fatura_id: int, db: Session = Depends(get_db)) -> None:  # noqa: B008
+def delete_fatura(
+    fatura_id: int,
+    current_user: dict[str, str] = Depends(get_current_user),  # noqa: B008,
+    db: Session = Depends(get_db),  # noqa: B008
+) -> None:
     deleted = crud_fatura.delete_fatura(db, fatura_id)
     if not deleted:
         raise HTTPException(status_code=404, detail="Fatura não encontrada")

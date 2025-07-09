@@ -1,5 +1,6 @@
 # main.py
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.config import config
 from app.core.lifespan import lifespan
@@ -19,6 +20,17 @@ app = FastAPI(
     if config.ENV in ("prod", "production")
     else f"/{config.BASE_URL}/openapi",
     lifespan=lifespan,
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:5173",
+        "*",
+    ],  # ou ["*"] para testar (não recomendado em produção)
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 register_routers(app)

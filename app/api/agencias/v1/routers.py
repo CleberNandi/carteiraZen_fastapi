@@ -1,5 +1,6 @@
 from collections.abc import Sequence
 
+from core.dependencies import get_current_user
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
@@ -20,6 +21,7 @@ router = APIRouter(prefix="/agencias", tags=["Agências"])
 def listar_agencias(
     skip: int = 0,
     limit: int = 100,
+    current_user: dict[str, str] = Depends(get_current_user),  # noqa: B008
     db: Session = Depends(get_db),  # noqa: B008
 ) -> Sequence[Agencia]:
     return get_agencias(db, skip=skip, limit=limit)
@@ -28,6 +30,7 @@ def listar_agencias(
 @router.get("/{agencia_id}", response_model=Agencia)
 def obter_agencia(
     agencia_id: int,
+    current_user: dict[str, str] = Depends(get_current_user),  # noqa: B008
     db: Session = Depends(get_db),  # noqa: B008
 ) -> Agencia | None:
     agencia = get_agencia(db, agencia_id)
@@ -40,6 +43,7 @@ def obter_agencia(
 def criar_agencia(
     agencia: AgenciaCreate,
     user_id: int = Query(...),
+    current_user: dict[str, str] = Depends(get_current_user),  # noqa: B008
     db: Session = Depends(get_db),  # noqa: B008
 ) -> Agencia:
     return create_agencia(db, agencia, user_id)
@@ -50,6 +54,7 @@ def atualizar_agencia(
     agencia_id: int,
     agencia: AgenciaCreate,
     executor_id: int = Query(...),
+    current_user: dict[str, str] = Depends(get_current_user),  # noqa: B008
     db: Session = Depends(get_db),  # noqa: B008
 ) -> Agencia | None:
     ag = update_agencia(db, agencia_id, agencia, executor_id)
@@ -62,6 +67,7 @@ def atualizar_agencia(
 def deletar_agencia(
     agencia_id: int,
     executor_id: int = Query(...),
+    current_user: dict[str, str] = Depends(get_current_user),  # noqa: B008
     db: Session = Depends(get_db),  # noqa: B008
 ) -> dict[str, bool]:
     ok = delete_agencia(db, agencia_id, executor_id)
