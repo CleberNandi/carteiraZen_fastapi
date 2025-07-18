@@ -1,11 +1,15 @@
 # main.py
 from fastapi import FastAPI
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.config import config
 from app.core.lifespan import lifespan
 from app.core.openapi import register_openapi_export
 from app.core.routes import register_routers
+from app.handlers.http_errors import (
+    validation_exception_handler,
+)
 
 app = FastAPI(
     title=getattr(config, "PROJECT_NAME", "No Project Name"),
@@ -21,6 +25,8 @@ app = FastAPI(
     else f"/{config.BASE_URL}/openapi",
     lifespan=lifespan,
 )
+
+app.add_exception_handler(RequestValidationError, validation_exception_handler)  # type: ignore
 
 app.add_middleware(
     CORSMiddleware,
