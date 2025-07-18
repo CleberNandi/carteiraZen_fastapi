@@ -42,11 +42,11 @@ def obter_conta(
 @router.post("/", response_model=ContaCorrente)
 def criar_conta(
     conta: ContaCorrenteCreate,
-    user_id: int = Query(...),
+    executor_id: int = Query(...),
     current_user: dict[str, str] = Depends(get_current_user),  # noqa: B008,
     db: Session = Depends(get_db),  # noqa: B008
 ) -> ContaCorrente:
-    return create_conta_corrente(db, conta, user_id)
+    return create_conta_corrente(db, conta, executor_id)
 
 
 @router.put("/{conta_id}", response_model=ContaCorrente)

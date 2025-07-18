@@ -42,11 +42,11 @@ def obter_cartao(
 @router.post("/", response_model=Cartao)
 def criar_cartao(
     cartao: CartaoCreate,
-    user_id: int = Query(...),
+    executor_id: int = Query(...),
     current_user: dict[str, str] = Depends(get_current_user),  # noqa: B008,
     db: Session = Depends(get_db),  # noqa: B008
 ) -> Cartao:
-    return create_cartao(db, cartao, user_id)
+    return create_cartao(db, cartao, executor_id)
 
 
 @router.put("/{cartao_id}", response_model=Cartao)

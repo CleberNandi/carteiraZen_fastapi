@@ -36,21 +36,21 @@ def read_banco(
 @router.post("/bancos/", response_model=Banco, tags=["Bancos"])
 def create_banco(
     banco: BancoCreate,
-    user_id: int,
+    executor_id: int,
     current_user: dict[str, str] = Depends(get_current_user),  # noqa: B008,
     db: Session = Depends(get_db),  # noqa: B008
 ) -> Banco:
     db_banco = crud_banco.get_banco_by_codigo(db, codigo=banco.codigo)
     if db_banco:
         raise HTTPException(status_code=400, detail="Código de banco já cadastrado")
-    return crud_banco.create_banco(db=db, banco=banco, user_id=user_id)
+    return crud_banco.create_banco(db=db, banco=banco, user_id=executor_id)
 
 
 @router.put("/bancos/{banco_id}", response_model=Banco, tags=["Bancos"])
 def update_banco(
     banco_id: int,
     banco: BancoCreate,
-    user_id: int,
+    executor_id: int,
     current_user: dict[str, str] = Depends(get_current_user),  # noqa: B008,
     db: Session = Depends(get_db),  # noqa: B008
 ) -> Banco:
@@ -58,7 +58,7 @@ def update_banco(
     if db_banco is None:
         raise HTTPException(status_code=404, detail="Banco não encontrado")
     banco_atualizado = crud_banco.update_banco(
-        db=db, banco_id=banco_id, banco=banco, user_id=user_id
+        db=db, banco_id=banco_id, banco=banco, user_id=executor_id
     )
     if banco_atualizado is None:
         raise HTTPException(status_code=404, detail="Banco não encontrado")
@@ -68,11 +68,11 @@ def update_banco(
 @router.delete("/bancos/{banco_id}", tags=["Bancos"])
 def delete_banco(
     banco_id: int,
-    user_id: int,
+    executor_id: int,
     current_user: dict[str, str] = Depends(get_current_user),  # noqa: B008,
     db: Session = Depends(get_db),  # noqa: B008
 ) -> dict[str, str]:
-    sucesso = crud_banco.delete_banco(db=db, banco_id=banco_id, user_id=user_id)
+    sucesso = crud_banco.delete_banco(db=db, banco_id=banco_id, user_id=executor_id)
     if not sucesso:
         raise HTTPException(status_code=404, detail="Banco não encontrado")
     return {"detail": "Banco removido com sucesso"}

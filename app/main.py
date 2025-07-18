@@ -32,7 +32,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:5173",
-        "*",
+        # "*",
     ],  # ou ["*"] para testar (não recomendado em produção)
     allow_credentials=True,
     allow_methods=["*"],

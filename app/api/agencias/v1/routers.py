@@ -42,11 +42,11 @@ def obter_agencia(
 @router.post("/", response_model=Agencia)
 def criar_agencia(
     agencia: AgenciaCreate,
-    user_id: int = Query(...),
+    executor_id: int = Query(...),
     current_user: dict[str, str] = Depends(get_current_user),  # noqa: B008
     db: Session = Depends(get_db),  # noqa: B008
 ) -> Agencia:
-    return create_agencia(db, agencia, user_id)
+    return create_agencia(db, agencia, executor_id)
 
 
 @router.put("/{agencia_id}", response_model=Agencia)
