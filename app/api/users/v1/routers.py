@@ -55,7 +55,7 @@ def read_user_by_email(
 @router.post("/users/", response_model=UserOut, tags=["Users"])
 def create_user(
     user: UserCreate,
-    user_id: int | None = None,
+    executor_id: int | None = None,
     current_user: dict[str, str] = Depends(get_current_user),  # noqa: B008,
     db: Session = Depends(get_db),  # noqa: B008
 ) -> UserOut:
@@ -63,7 +63,7 @@ def create_user(
     if db_user:
         raise HTTPException(status_code=400, detail="Email already registered")
     try:
-        return crud_user.create_user(db=db, user=user, user_id=user_id)
+        return crud_user.create_user(db=db, user=user, user_id=executor_id)
     except UserCreationRequiresUserIdError as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)

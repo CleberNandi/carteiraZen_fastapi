@@ -28,12 +28,14 @@
   "python.languageServer": "Pylance",
   "python.testing.unittestEnabled": false,
   "python.testing.pytestEnabled": true,
-  "python.defaultInterpreterPath": "./venv/bin/python",
-  "python.formatting.provider": "none",
   "files.exclude": {
     "**/__pycache__": true,
     "**/.pytest_cache": true,
     "**/base_core_fastapi.egg-info": true,
     "**/carteirazen.egg-info": true
+  },
+  "terminal.integrated.env.linux": {
+    "VIRTUAL_ENV": "${workspaceFolder}/.venv",
+    "PATH": "${workspaceFolder}/.venv/bin:${env:PATH}"
   }
 }

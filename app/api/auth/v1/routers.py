@@ -33,7 +33,7 @@ def login(
         if not totp.verify(request.totp_token):
             raise HTTPException(status_code=401, detail="Token 2FA inválido")
 
-    access_token = create_access_token(data={"sub": user.email})
+    access_token = create_access_token(data={"id": user.id, "sub": user.email})
     return {"access_token": access_token, "token_type": "bearer"}
 
 

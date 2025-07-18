@@ -72,9 +72,10 @@ def update_user(
         return None
     dados_antes = db_user.__dict__.copy()
     for attr, value in user.model_dump().items():
-        if attr == "hashed_password":
+        if value is not None and attr == "hashed_password":
             value = get_password_hash(value)
-        setattr(db_user, attr, value)
+        if value is not None:
+            setattr(db_user, attr, value)
     db.commit()
     db.refresh(db_user)
     # Auditoria

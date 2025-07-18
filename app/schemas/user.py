@@ -7,8 +7,8 @@ class UserBase(BaseModel):
 
 
 class UserCreate(UserBase):
-    hashed_password: str
-    totp_secret: str | None
+    hashed_password: str | None = None
+    totp_secret: str | None = None
     is_active: bool
     is_superuser: bool
     is_2fa_enabled: bool
