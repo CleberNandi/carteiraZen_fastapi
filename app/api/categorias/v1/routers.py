@@ -18,11 +18,11 @@ router = APIRouter(prefix="/categorias", tags=["Categorias"])
 @router.post("/", response_model=CategoriaRead)
 def create(
     categoria: CategoriaCreate,
-    user_id: int,
+    executor_id: int,
     current_user: dict[str, str] = Depends(get_current_user),  # noqa: B008,
     db: Session = Depends(get_db),  # noqa: B008
 ) -> CategoriaRead:
-    return create_categoria(db, categoria, user_id)
+    return create_categoria(db, categoria, executor_id)
 
 
 @router.get("/", response_model=list[CategoriaRead])
@@ -52,11 +52,11 @@ def read(
 def update(
     categoria_id: int,
     categoria: CategoriaUpdate,
-    user_id: int,
+    executor_id: int,
     current_user: dict[str, str] = Depends(get_current_user),  # noqa: B008,
     db: Session = Depends(get_db),  # noqa: B008
 ) -> CategoriaRead:
-    updated = update_categoria(db, categoria_id, categoria, user_id)
+    updated = update_categoria(db, categoria_id, categoria, executor_id)
     if not updated:
         raise HTTPException(status_code=404, detail="Categoria não encontrada")
     return updated
@@ -65,8 +65,9 @@ def update(
 @router.delete("/{categoria_id}", status_code=204)
 def delete(
     categoria_id: int,
+    executor_id: int,
     current_user: dict[str, str] = Depends(get_current_user),  # noqa: B008,
     db: Session = Depends(get_db),  # noqa: B008
 ) -> None:
-    if not delete_categoria(db, categoria_id):
+    if not delete_categoria(db, categoria_id, executor_id=executor_id):
         raise HTTPException(status_code=404, detail="Categoria não encontrada")
