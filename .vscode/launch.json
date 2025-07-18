@@ -1,19 +1,24 @@
 {
-    "version": "0.2.0",
-    "configurations": [
-        {
-            "name": "Debug FastAPI (uvicorn)",
-            "type": "debugpy",
-            "request": "launch",
-            "module": "uvicorn",
-            "args": [
-                "app.main:app",
-                "--reload"
-            ],
-            "jinja": true,
-            "justMyCode": true,
-            "envFile": "${workspaceFolder}/.env",
-            "console": "integratedTerminal"
-        }
-    ]
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug FastAPI (uvicorn)",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "uvicorn",
+      "args": [
+        "app.main:app",
+        "--host", "0.0.0.0",
+        "--port", "8000",
+        "--reload"
+      ],
+      "jinja": true,
+      "justMyCode": true,
+      "env": {
+        "ENV_MODE": "dev"
+      },
+      "envFile": "${workspaceFolder}/.env",
+      "console": "integratedTerminal"
+    }
+  ]
 }
