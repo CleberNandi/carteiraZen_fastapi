@@ -8,20 +8,25 @@ class TipoContaEnum(str, Enum):
     poupanca = "poupanca"
 
 
-class ContaCorrenteBase(BaseModel):
+class ContaBase(BaseModel):
     numero: str
-    digito: str | None = None
+    digito: str
+    nome: str
     agencia_id: int
     user_id: int
     saldo_inicial: float = 0.0
     tipo: TipoContaEnum = TipoContaEnum.corrente
-    ativo: bool | None = True
+    ativo: bool = True
 
 
-class ContaCorrenteCreate(ContaCorrenteBase):
+class ContaCreate(ContaBase):
     pass
 
 
-class ContaCorrente(ContaCorrenteBase):
+class ContaUpdate(ContaBase):
+    pass
+
+
+class ContaOut(ContaBase):
     id: int
     model_config = ConfigDict(from_attributes=True)

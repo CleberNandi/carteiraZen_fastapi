@@ -25,7 +25,8 @@ class ContaCorrente(Base, AuditMixin):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
     numero: Mapped[str] = mapped_column(String(20), nullable=False)
-    digito: Mapped[str] = mapped_column(String(2), nullable=True)
+    nome: Mapped[str] = mapped_column(String(100), nullable=True)
+    digito: Mapped[str] = mapped_column(String(2), nullable=False)
     agencia_id: Mapped[int] = mapped_column(
         Integer, ForeignKey("agencias.id"), nullable=False
     )

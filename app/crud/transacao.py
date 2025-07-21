@@ -5,17 +5,19 @@ from app import models
 from app.schemas.transacao import TransacaoCreate, TransacaoUpdate
 
 Transacao = models.Transacao
+Auditoria = models.Auditoria
 
 
-def create_transacao(db: Session, transacao: TransacaoCreate, user_id: int) -> Transacao:
+def create_transacao(
+    db: Session, transacao: TransacaoCreate, user_id: int
+) -> Transacao:
     db_transacao = Transacao(**transacao.model_dump())
     db.add(db_transacao)
     db.commit()
     db.refresh(db_transacao)
-    # Auditoria
-    from app import models
 
-    auditoria = models.Auditoria(
+    # Auditoria
+    auditoria = Auditoria(
         tabela="transacoes",
         registro_id=db_transacao.id,
         acao="create",
@@ -35,7 +37,9 @@ def get_transacoes(db: Session, skip: int = 0, limit: int = 100) -> list[Transac
     return db.query(Transacao).offset(skip).limit(limit).all()
 
 
-def update_transacao(db: Session, transacao_id: int, transacao: TransacaoUpdate) -> Transacao | None:
+def update_transacao(
+    db: Session, transacao_id: int, transacao: TransacaoUpdate
+) -> Transacao | None:
     db_transacao = get_transacao(db, transacao_id)
     if not db_transacao:
         return None

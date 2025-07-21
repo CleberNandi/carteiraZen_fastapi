@@ -42,5 +42,5 @@ class Transacao(Base, AuditMixin):
 
     conta_origem = relationship("ContaCorrente")
     categoria = relationship("Categoria")
-    fatura = relationship("FaturaCartaoCredito", back_populates="transacoes")
+    fatura = relationship("Fatura", back_populates="transacoes")
     user = relationship("User")

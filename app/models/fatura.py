@@ -5,7 +5,7 @@ from app.db.base import Base
 from app.models.mixins import AuditMixin
 
 
-class FaturaCartaoCredito(Base, AuditMixin):
+class Fatura(Base, AuditMixin):
     __tablename__ = "faturas"
 
     id: Mapped[int] = mapped_column(primary_key=True, index=True)

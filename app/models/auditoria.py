@@ -18,4 +18,11 @@ class Auditoria(Base):
     dados_antes: Mapped[str | None] = mapped_column(
         nullable=True
     )  # Pode ser JSON/texto
+    dados_input: Mapped[str | None] = mapped_column(
+        nullable=True
+    )  # Pode ser JSON/texto
     dados_depois: Mapped[str | None] = mapped_column(nullable=True)
+
+    created_at: Mapped[datetime] = mapped_column(
+        server_default=func.now(), nullable=False, index=True
+    )

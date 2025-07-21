@@ -6,14 +6,12 @@ from sqlalchemy.orm import Session
 from app import models
 from app.schemas.fatura import FaturaCreate, FaturaUpdate
 
-FaturaCartaoCredito = models.FaturaCartaoCredito
+Fatura = models.Fatura
 Auditoria = models.Auditoria
 
 
-def create_fatura(
-    db: Session, fatura: FaturaCreate, user_id: int
-) -> FaturaCartaoCredito:
-    db_fatura = FaturaCartaoCredito(**fatura.model_dump(), user_id=user_id)
+def create_fatura(db: Session, fatura: FaturaCreate, user_id: int) -> Fatura:
+    db_fatura = Fatura(**fatura.model_dump(), user_id=user_id)
     db.add(db_fatura)
     db.commit()
     db.refresh(db_fatura)
@@ -32,12 +30,12 @@ def create_fatura(
     return db_fatura
 
 
-def get_fatura(db: Session, fatura_id: int) -> FaturaCartaoCredito | None:
+def get_fatura(db: Session, fatura_id: int) -> Fatura | None:
     return (
-        db.query(FaturaCartaoCredito)
+        db.query(Fatura)
         .filter(
-            FaturaCartaoCredito.id == fatura_id,
-            FaturaCartaoCredito.deleted_at.is_(None),
+            Fatura.id == fatura_id,
+            Fatura.deleted_at.is_(None),
         )
         .first()
     )
@@ -50,12 +48,12 @@ def validar_unicidade(
     ano: int,
 ) -> bool | dict[str, int]:
     fatura = (
-        db.query(FaturaCartaoCredito)
+        db.query(Fatura)
         .filter(
-            FaturaCartaoCredito.cartao_id == cartao_id,
-            FaturaCartaoCredito.mes == mes,
-            FaturaCartaoCredito.ano == ano,
-            FaturaCartaoCredito.ativo,
+            Fatura.cartao_id == cartao_id,
+            Fatura.mes == mes,
+            Fatura.ano == ano,
+            Fatura.ativo,
         )
         .first()
     )
@@ -66,12 +64,10 @@ def validar_unicidade(
     return {"id": fatura.id}
 
 
-def get_faturas(
-    db: Session, skip: int = 0, limit: int = 100
-) -> list[FaturaCartaoCredito]:
+def get_faturas(db: Session, skip: int = 0, limit: int = 100) -> list[Fatura]:
     return (
-        db.query(FaturaCartaoCredito)
-        .filter(FaturaCartaoCredito.deleted_at.is_(None))
+        db.query(Fatura)
+        .filter(Fatura.deleted_at.is_(None))
         .offset(skip)
         .limit(limit)
         .all()
@@ -80,7 +76,7 @@ def get_faturas(
 
 def update_fatura(
     db: Session, fatura_id: int, fatura: FaturaUpdate, executor_id: int
-) -> FaturaCartaoCredito | None:
+) -> Fatura | None:
     db_fatura = get_fatura(db, fatura_id)
     if not db_fatura:
         return None
@@ -125,3 +121,13 @@ def delete_fatura(db: Session, fatura_id: int, executor_id: int) -> bool:
     db.add(auditoria)
     db.commit()
     return True
+
+
+def get_fatura_existente(
+    db: Session, cartao_id: int, mes: int, ano: int
+) -> Fatura | None:
+    return (
+        db.query(Fatura)
+        .filter_by(cartao_id=cartao_id, mes=mes, ano=ano, ativo=True)
+        .first()
+    )

@@ -1,7 +1,7 @@
 from collections.abc import Sequence
 
 from core.dependencies import get_current_user
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from app.crud.agencia import (
@@ -12,16 +12,18 @@ from app.crud.agencia import (
     update_agencia,
 )
 from app.db.session import get_db
+from app.models import User
 from app.schemas.agencia import Agencia, AgenciaCreate
 
-router = APIRouter(prefix="/agencias", tags=["Agências"])
+router = APIRouter(
+    prefix="/agencias", tags=["Agências"], dependencies=[Depends(get_current_user)]
+)
 
 
 @router.get("/", response_model=list[Agencia])
 def listar_agencias(
     skip: int = 0,
     limit: int = 100,
-    current_user: dict[str, str] = Depends(get_current_user),  # noqa: B008
     db: Session = Depends(get_db),  # noqa: B008
 ) -> Sequence[Agencia]:
     return get_agencias(db, skip=skip, limit=limit)
@@ -30,7 +32,6 @@ def listar_agencias(
 @router.get("/{agencia_id}", response_model=Agencia)
 def obter_agencia(
     agencia_id: int,
-    current_user: dict[str, str] = Depends(get_current_user),  # noqa: B008
     db: Session = Depends(get_db),  # noqa: B008
 ) -> Agencia | None:
     agencia = get_agencia(db, agencia_id)
@@ -42,22 +43,20 @@ def obter_agencia(
 @router.post("/", response_model=Agencia)
 def criar_agencia(
     agencia: AgenciaCreate,
-    executor_id: int = Query(...),
-    current_user: dict[str, str] = Depends(get_current_user),  # noqa: B008
+    current_user: User = Depends(get_current_user),  # noqa: B008
     db: Session = Depends(get_db),  # noqa: B008
 ) -> Agencia:
-    return create_agencia(db, agencia, executor_id)
+    return create_agencia(db, agencia, current_user.id)
 
 
 @router.put("/{agencia_id}", response_model=Agencia)
 def atualizar_agencia(
     agencia_id: int,
     agencia: AgenciaCreate,
-    executor_id: int = Query(...),
-    current_user: dict[str, str] = Depends(get_current_user),  # noqa: B008
+    current_user: User = Depends(get_current_user),  # noqa: B008
     db: Session = Depends(get_db),  # noqa: B008
 ) -> Agencia | None:
-    ag = update_agencia(db, agencia_id, agencia, executor_id)
+    ag = update_agencia(db, agencia_id, agencia, current_user.id)
     if not ag:
         raise HTTPException(status_code=404, detail="Agência não encontrada")
     return ag
@@ -66,11 +65,10 @@ def atualizar_agencia(
 @router.delete("/{agencia_id}")
 def deletar_agencia(
     agencia_id: int,
-    executor_id: int = Query(...),
-    current_user: dict[str, str] = Depends(get_current_user),  # noqa: B008
+    current_user: User = Depends(get_current_user),  # noqa: B008
     db: Session = Depends(get_db),  # noqa: B008
 ) -> dict[str, bool]:
-    ok = delete_agencia(db, agencia_id, executor_id)
+    ok = delete_agencia(db, agencia_id, current_user.id)
     if not ok:
         raise HTTPException(status_code=404, detail="Agência não encontrada")
     return {"ok": True}

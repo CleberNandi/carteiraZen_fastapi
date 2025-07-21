@@ -6,6 +6,8 @@ from sqlalchemy.orm import Session
 from app.crud import transacao as crud_transacao
 from app.db.session import get_db
 from app.schemas.transacao import TransacaoCreate, TransacaoRead, TransacaoUpdate
+from app.schemas.user import UserOut
+from app.services.transacoes import criar_transacao
 
 router = APIRouter(prefix="/transacoes", tags=["Transações"])
 
@@ -13,11 +15,13 @@ router = APIRouter(prefix="/transacoes", tags=["Transações"])
 @router.post("/", response_model=TransacaoRead, status_code=status.HTTP_201_CREATED)
 def create_transacao(
     transacao: TransacaoCreate,
-    current_user: dict[str, str] = Depends(get_current_user),  # noqa: B008,
+    current_user: UserOut = Depends(get_current_user),  # noqa: B008,
     db: Session = Depends(get_db),  # noqa: B008
-    user_id: int = 1,  # Default user_id for testing, replace with actual user context
 ) -> TransacaoCreate:
-    return crud_transacao.create_transacao(db, transacao, user_id)
+    user_id = current_user.id
+    if not user_id:
+        raise HTTPException(status_code=401, detail="Usuário não autenticado")
+    return criar_transacao(db, transacao, user_id)
 
 
 @router.get("/", response_model=list[TransacaoRead])

@@ -7,6 +7,8 @@ from sqlalchemy.orm import Session
 from app.crud import fatura as crud_fatura
 from app.db.session import get_db
 from app.schemas.fatura import FaturaCreate, FaturaRead, FaturaUpdate
+from app.schemas.user import UserOut
+from app.services.faturas import criar_fatura
 
 router = APIRouter(tags=["Faturas"])
 
@@ -53,10 +55,10 @@ def get_fatura(
 def create_fatura(
     fatura: FaturaCreate,
     executor_id: int,
-    current_user: dict[str, str] = Depends(get_current_user),  # noqa: B008,
+    current_user: UserOut = Depends(get_current_user),  # noqa: B008,
     db: Session = Depends(get_db),  # noqa: B008
 ) -> FaturaRead:
-    return crud_fatura.create_fatura(db, fatura, executor_id)
+    return criar_fatura(db, fatura, executor_id)
 
 
 @router.put("/faturas/{fatura_id}", response_model=FaturaRead)

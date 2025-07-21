@@ -10,6 +10,7 @@ class AuditoriaBase(BaseModel):
     user_id: int | None = None
     data: datetime | None = None
     dados_antes: str | None = None
+    dados_input: str | None = None
     dados_depois: str | None = None
 
 
