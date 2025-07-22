@@ -1,6 +1,5 @@
 from datetime import UTC, datetime
 
-from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
 from app import models
@@ -55,65 +54,56 @@ def create_conta_corrente(
 
 
 def update_conta_corrente(
-    db: Session, conta_id: int, conta_data: ContaUpdate, user_id: int
+    db: Session, conta: ContaCorrente, conta_data: ContaUpdate, user_id: int
 ) -> ContaCorrente | None:
-    db_conta = get_conta_corrente(db, conta_id)
-    if db_conta is None:
-        raise HTTPException(status_code=404, detail="Conta corrente não encontrada")
-
-    dados_antes = serialize_mapped(db_conta)
+    dados_antes = serialize_mapped(conta)
 
     campos_alterados = apply_update_fields(
-        model=db_conta,
-        data=conta_data.model_dump(),
-        fields=["nome", "digito", "tipo", "ativo"],
-        ignore_none=True,
+        model=conta,
+        data=conta_data,
+        fields=["nome", "digito", "tipo", "ativo", "saldo_inicial", "nome"],
     )
 
     if not campos_alterados:
-        return db_conta  # Nenhuma mudança, evita auditoria desnecessária
+        return conta  # Nenhuma mudança, evita auditoria desnecessária
 
-    db_conta.updated_by = user_id
-    db_conta.updated_at = datetime.now(UTC)
+    conta.updated_by = user_id
+    conta.updated_at = datetime.now(UTC)
 
     registrar_auditoria(
         db=db,
         tabela="contas_correntes",
-        registro_id=db_conta.id,
+        registro_id=conta.id,
         acao="update",
         user_id=user_id,
         dados_antes=dados_antes,
         dados_input=conta_data.model_dump(),
-        dados_depois=serialize_mapped(db_conta),
+        dados_depois=serialize_mapped(conta),
     )
 
     db.commit()
-    db.refresh(db_conta)
+    db.refresh(conta)
 
-    return db_conta
+    return conta
 
 
-def delete_conta_corrente(db: Session, conta_id: int, user_id: int) -> bool:
-    db_conta = get_conta_corrente(db, conta_id)
-    if not db_conta:
-        raise HTTPException(status_code=404, detail="Conta não encontrada.")
+def delete_conta_corrente(db: Session, conta: ContaCorrente, user_id: int) -> bool:
+    dados_antes = serialize_mapped(conta)
 
-    dados_antes = serialize_mapped(db_conta)
-
-    db_conta.deleted_by = user_id
-    db_conta.deleted_at = datetime.now(UTC)
+    conta.deleted_by = user_id
+    conta.deleted_at = datetime.now(UTC)
 
     registrar_auditoria(
         db=db,
         tabela="contas_correntes",
-        registro_id=db_conta.id,
+        registro_id=conta.id,
         acao="delete",
         user_id=user_id,
         dados_antes=dados_antes,
     )
 
     db.commit()
-    db.refresh(db_conta)
+    db.refresh(conta)
     return True
 
 

@@ -1,11 +1,10 @@
-from collections.abc import Mapping
-
+from pydantic import BaseModel
 from sqlalchemy.orm import DeclarativeBase
 
 
 def apply_update_fields(
     model: DeclarativeBase,
-    data: Mapping[str, object],
+    data: BaseModel,
     fields: list[str],
     *,
     ignore_none: bool = True,
@@ -21,7 +20,11 @@ def apply_update_fields(
     atualizados: list[str] = []
 
     for field in fields:
-        if not hasattr(model, field) or not hasattr(data, field):
+        if not hasattr(model, field):
+            continue
+
+        # ⚠️ Só atualiza se o campo foi explicitamente enviado
+        if field not in data.model_fields_set:
             continue
 
         valor_novo = getattr(data, field)
