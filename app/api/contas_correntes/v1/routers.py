@@ -50,7 +50,7 @@ def atualizar_conta(
     db: Session = Depends(get_db),  # noqa: B008
 ) -> ContaOut | None:
     return ContaService(db).atualizar(
-        conta=conta_id, conta_data=conta, executor_id=current_user.id
+        conta_id=conta_id, conta_data=conta, executor_id=current_user.id
     )
 
 

@@ -46,26 +46,26 @@ class ContaService:
         return create_conta_corrente(self.db, conta, user_id)
 
     def atualizar(
-        self, conta: ContaCorrente, conta_data: ContaUpdate, executor_id: int
+        self, conta_id: int, conta_data: ContaUpdate, executor_id: int
     ) -> ContaCorrente | None:
-        conta = get_conta_corrente(self.db, conta)
-        if not conta:
+        conta_id = get_conta_corrente(self.db, conta_id)
+        if not conta_id:
             raise HTTPException(status_code=404, detail="Conta não encontrada.")
 
         if conta_data.saldo_inicial < 0:
             raise HTTPException(status_code=400, detail="Saldo não pode ser negativo.")
 
-        if conta_data.numero != conta.numero:
+        if conta_data.numero != conta_id.numero:
             raise HTTPException(
                 status_code=400, detail="Não é permitido alterar o número da conta."
             )
 
-        if conta_data.agencia_id != conta.agencia_id:
+        if conta_data.agencia_id != conta_id.agencia_id:
             raise HTTPException(
                 status_code=400, detail="Não é permitido alterar a agência da conta."
             )
 
-        return update_conta_corrente(self.db, conta, conta_data, executor_id)
+        return update_conta_corrente(self.db, conta_id, conta_data, executor_id)
 
     def deletar(self, conta_id: int, executor_id: int) -> None:
         conta = get_conta_corrente(self.db, conta_id)
