@@ -1,5 +1,7 @@
-import pytest
+from typing import Any
+
 from fastapi.testclient import TestClient
+import pytest
 
 from app.db.base import Base
 from app.db.session import engine
@@ -94,7 +96,7 @@ def test_get_agencias_list():
     )
     resp = client.get("/api/v1/agencias/")
     assert resp.status_code == 200
-    agencias = resp.json()
+    agencias: list[Any] = resp.json()
     assert isinstance(agencias, list)
     assert len(agencias) >= 2
 

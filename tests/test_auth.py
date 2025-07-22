@@ -1,6 +1,6 @@
+from fastapi.testclient import TestClient
 import pyotp
 import pytest
-from fastapi.testclient import TestClient
 
 from app.db.base import Base
 from app.db.session import SessionLocal, engine

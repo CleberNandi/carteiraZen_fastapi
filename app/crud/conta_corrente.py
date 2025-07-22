@@ -65,7 +65,7 @@ def update_conta_corrente(
 
     campos_alterados = apply_update_fields(
         model=db_conta,
-        data=conta_data,
+        data=conta_data.model_dump(),
         fields=["nome", "digito", "tipo", "ativo"],
         ignore_none=True,
     )

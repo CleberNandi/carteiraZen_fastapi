@@ -1,5 +1,7 @@
-import pytest
+from typing import Any
+
 from fastapi.testclient import TestClient
+import pytest
 
 from app.db.base import Base
 from app.db.session import engine
@@ -188,7 +190,7 @@ def test_get_contas_correntes_list():
     )
     resp = client.get("/api/v1/contas-correntes/")
     assert resp.status_code == 200
-    contas = resp.json()
+    contas: list[Any] = resp.json()
     assert isinstance(contas, list)
     assert len(contas) >= 2
 

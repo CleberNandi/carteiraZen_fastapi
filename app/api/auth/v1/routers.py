@@ -1,10 +1,10 @@
 import io
 
-import pyotp
-import qrcode
 from core.dependencies import get_current_user
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import StreamingResponse
+import pyotp
+import qrcode
 from sqlalchemy.orm import Session
 
 from app.core.security import create_access_token, verify_password
@@ -22,7 +22,10 @@ def login(
 ) -> dict[str, str]:
     user = db.query(User).filter(User.email == request.email).first()
 
-    if not user or not verify_password(request.password, user.hashed_password):
+    if not user or user.hashed_password is None:
+        raise HTTPException(status_code=401, detail="Credenciais inválidas")
+
+    if not verify_password(request.password, user.hashed_password):
         raise HTTPException(status_code=401, detail="Credenciais inválidas")
 
     if user.is_2fa_enabled:

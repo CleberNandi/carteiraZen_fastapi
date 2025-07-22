@@ -1,5 +1,5 @@
-import enum
 from datetime import UTC, datetime
+import enum
 
 from sqlalchemy import Enum, ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship

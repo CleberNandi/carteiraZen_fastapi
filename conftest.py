@@ -1,6 +1,6 @@
 # em conftest.py
-import os
 from collections.abc import Generator
+import os
 from typing import Any
 
 import pytest

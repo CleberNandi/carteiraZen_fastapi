@@ -1,7 +1,7 @@
 from typing import Any
 
-import pytest
 from fastapi.testclient import TestClient
+import pytest
 
 from app.db.base import Base
 from app.db.session import engine

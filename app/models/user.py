@@ -10,7 +10,7 @@ class User(Base, AuditMixin):
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
     name: Mapped[str] = mapped_column(index=True)
     email: Mapped[str] = mapped_column(unique=True, index=True)
-    hashed_password: Mapped[str | str | None] = mapped_column(nullable=True)
+    hashed_password: Mapped[str | None] = mapped_column(nullable=True)
     totp_secret: Mapped[str] = mapped_column(nullable=True)
     is_active: Mapped[bool] = mapped_column(default=True)
     is_superuser: Mapped[bool] = mapped_column(default=False)

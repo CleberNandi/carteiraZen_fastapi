@@ -1,5 +1,5 @@
-import enum
 from datetime import date, datetime
+import enum
 
 from pydantic import BaseModel, ConfigDict
 

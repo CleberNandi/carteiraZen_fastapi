@@ -1,12 +1,12 @@
-import os
 from collections.abc import Generator
+import os
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
 
-import app.models  # type: ignore # noqa: F401  # Importa todos os models para registrar no metadata
 from app.core.config import config
 from app.db.base import Base
+import app.models  # type: ignore # noqa: F401  # Importa todos os models para registrar no metadata
 
 SQLALCHEMY_DATABASE_URL = config.DATABASE_URL
 

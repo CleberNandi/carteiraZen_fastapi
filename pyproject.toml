@@ -11,8 +11,6 @@ dependencies = [
     "pydantic>=2.11.7",
     "pydantic-settings>=2.10.0",
     "python-dotenv>=1.1.0",
-    "pytest>=8.4.1",
-    "pytest-asyncio>=1.0.0",
     "dynaconf>=3.2.5",
     "sqlalchemy>=2.0.41",
     "psycopg2-binary>=2.9.10",
@@ -31,9 +29,6 @@ Documentation = "http://localhost:8000/app/docs"
 Repository = "https://github.com/CleberNandi/carteiraZen_fastapi"
 Issues = "https://github.com/CleberNandi/carteiraZen_fastapi/issues"
 # Changelog = "https://github.com/CleberNandi/carteiraZen_fastapi/blob/master/CHANGELOG.md"
-
-[project.optional-dependencies]
-dev = ["ruff", "pyright", "pytest", "pytest-xdist"]
 
 [project.scripts]
 # O comando 'carteirazen' executa o app FastAPI
@@ -68,6 +63,8 @@ line-ending = "lf"
 # Ensina ao Ruff qual é o pacote principal do seu projeto.
 # Deve ser o mesmo nome da pasta principal.
 known-first-party = ["app"]
+force-sort-within-sections = true
+combine-as-imports = true
 
 
 # ============================
@@ -114,8 +111,13 @@ build-backend = "setuptools.build_meta"
 
 [dependency-groups]
 dev = [
+    "coverage>=7.9.2",
     "pre-commit>=4.2.0",
+    "pyright>=1.1.403",
     "pytest>=8.4.1",
+    "pytest-asyncio>=1.1.0",
+    "pytest-xdist>=3.8.0",
+    "ruff>=0.12.4",
 ]
 
 [tool.setuptools.packages.find]

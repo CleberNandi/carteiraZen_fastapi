@@ -5,6 +5,7 @@ Revises: id_da_migracao_anterior
 Create Date: 2025-07-20 20:00:00.000000
 
 """
+
 import sqlalchemy as sa
 
 from alembic import op

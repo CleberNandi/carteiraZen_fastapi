@@ -1,9 +1,9 @@
 from datetime import UTC, datetime, timedelta
 from typing import Any
 
-import pyotp
 from jose import jwt
 from passlib.context import CryptContext
+import pyotp
 
 from app.core.config import config  # settings.SECRET_KEY, ALGORITHM
 

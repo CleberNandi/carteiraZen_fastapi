@@ -1,7 +1,8 @@
 from typing import Any
 
-import pyotp
 from core.security import gerar_totp_secret, get_password_hash
+from fastapi import HTTPException
+import pyotp
 from sqlalchemy.orm import Session
 
 from app import models
@@ -39,6 +40,9 @@ def create_user(db: Session, user: UserCreate, user_id: int | None = None) -> Us
             "user_id é obrigatório para criar novos usuários após o primeiro cadastro."
         )
         raise UserCreationRequiresUserIdError(msg)
+    if not user or user.hashed_password is None:
+        raise HTTPException(status_code=401, detail="Credenciais inválidas")
+
     db_user = User(
         name=user.name,
         email=user.email,

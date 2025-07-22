@@ -1,5 +1,7 @@
-import pytest
+from typing import Any
+
 from fastapi.testclient import TestClient
+import pytest
 
 from app.db.base import Base
 from app.db.session import engine
@@ -71,7 +73,7 @@ def test_auditoria_log_banco_update_delete():
 def test_auditoria_invalid_filter():
     resp = client.get("/api/v1/auditoria/?acao=invalid")
     assert resp.status_code == 200
-    auditorias = resp.json()
+    auditorias: list[Any] = resp.json()
     # Expecting no results for invalid filter
     assert isinstance(auditorias, list)
     assert len(auditorias) == 0

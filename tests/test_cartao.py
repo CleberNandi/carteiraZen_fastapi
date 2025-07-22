@@ -1,5 +1,7 @@
-import pytest
+from typing import Any
+
 from fastapi.testclient import TestClient
+import pytest
 
 from app.db.base import Base
 from app.db.session import engine
@@ -153,7 +155,7 @@ def test_get_cartoes_list():
     )
     resp = client.get("/api/v1/cartoes/")
     assert resp.status_code == 200
-    cartoes = resp.json()
+    cartoes: list[Any] = resp.json()
     assert isinstance(cartoes, list)
     assert len(cartoes) >= 2
 
