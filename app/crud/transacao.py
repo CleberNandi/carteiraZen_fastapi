@@ -1,59 +1,54 @@
 # app/crud/transacao.py
+
+
 from sqlalchemy.orm import Session
 
-from app import models
+from app.models import Transacao
 from app.schemas.transacao import TransacaoCreate, TransacaoUpdate
 
-Transacao = models.Transacao
-Auditoria = models.Auditoria
 
-
-def create_transacao(
-    db: Session, transacao: TransacaoCreate, user_id: int
-) -> Transacao:
-    db_transacao = Transacao(**transacao.model_dump())
+def create_transacao(db: Session, transacao_in: TransacaoCreate) -> Transacao:
+    db_transacao = Transacao(**transacao_in.model_dump())
     db.add(db_transacao)
     db.commit()
     db.refresh(db_transacao)
-
-    # Auditoria
-    auditoria = Auditoria(
-        tabela="transacoes",
-        registro_id=db_transacao.id,
-        acao="create",
-        user_id=user_id,
-        dados_depois=str(transacao.model_dump()),
-    )
-    db.add(auditoria)
-    db.commit()
     return db_transacao
 
 
-def get_transacao(db: Session, transacao_id: int) -> Transacao | None:
-    return db.query(Transacao).filter(Transacao.id == transacao_id).first()
+def listar_transacoes_por_usuario(db: Session, user_id: int) -> list[Transacao]:
+    return db.query(Transacao).filter(Transacao.user_id == user_id).all()
 
 
-def get_transacoes(db: Session, skip: int = 0, limit: int = 100) -> list[Transacao]:
-    return db.query(Transacao).offset(skip).limit(limit).all()
-
-
-def update_transacao(
-    db: Session, transacao_id: int, transacao: TransacaoUpdate
+def get_transacao_by_id_and_user(
+    db: Session, transacao_id: int, user_id: int
 ) -> Transacao | None:
-    db_transacao = get_transacao(db, transacao_id)
-    if not db_transacao:
+    return (
+        db.query(Transacao)
+        .filter(Transacao.id == transacao_id, Transacao.user_id == user_id)
+        .first()
+    )
+
+
+def update_transacao_by_user(
+    db: Session, transacao_id: int, transacao_in: TransacaoUpdate, user_id: int
+) -> Transacao | None:
+    transacao = get_transacao_by_id_and_user(db, transacao_id, user_id)
+    if not transacao:
         return None
-    for attr, value in transacao.model_dump(exclude_unset=True).items():
-        setattr(db_transacao, attr, value)
+
+    for field, value in transacao_in.model_dump(exclude_unset=True).items():
+        setattr(transacao, field, value)
+
     db.commit()
-    db.refresh(db_transacao)
-    return db_transacao
+    db.refresh(transacao)
+    return transacao
 
 
-def delete_transacao(db: Session, transacao_id: int) -> bool:
-    db_transacao = get_transacao(db, transacao_id)
-    if not db_transacao:
+def delete_transacao_by_user(db: Session, transacao_id: int, user_id: int) -> bool:
+    transacao = get_transacao_by_id_and_user(db, transacao_id, user_id)
+    if not transacao:
         return False
-    db.delete(db_transacao)
+
+    db.delete(transacao)
     db.commit()
     return True

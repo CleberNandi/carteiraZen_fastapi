@@ -1,69 +1,72 @@
 # app/api/v1/routes/transacao.py
+
 from core.dependencies import get_current_user
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
-from app.crud import transacao as crud_transacao
 from app.db.session import get_db
 from app.schemas.transacao import TransacaoCreate, TransacaoRead, TransacaoUpdate
 from app.schemas.user import UserOut
-from app.services.transacoes import criar_transacao
+from app.services.transacoes import TransacaoService
 
-router = APIRouter(prefix="/transacoes", tags=["Transações"])
+router = APIRouter(
+    prefix="/transacoes", tags=["Transações"], dependencies=[Depends(get_current_user)]
+)
 
 
 @router.post("/", response_model=TransacaoRead, status_code=status.HTTP_201_CREATED)
 def create_transacao(
     transacao: TransacaoCreate,
-    current_user: UserOut = Depends(get_current_user),  # noqa: B008,
+    current_user: UserOut = Depends(get_current_user),  # noqa: B008
     db: Session = Depends(get_db),  # noqa: B008
-) -> TransacaoCreate:
-    user_id = current_user.id
-    if not user_id:
-        raise HTTPException(status_code=401, detail="Usuário não autenticado")
-    return criar_transacao(db, transacao, user_id)
+) -> TransacaoRead:
+    service = TransacaoService(db=db, user_id=current_user.id)
+    return service.criar(transacao)
 
 
 @router.get("/", response_model=list[TransacaoRead])
 def list_transacoes(
-    current_user: dict[str, str] = Depends(get_current_user),  # noqa: B008,
+    current_user: UserOut = Depends(get_current_user),  # noqa: B008
     db: Session = Depends(get_db),  # noqa: B008
 ) -> list[TransacaoRead]:
-    transacoes = crud_transacao.get_transacoes(db)
-    return [TransacaoRead.model_validate(c) for c in transacoes]
+    service = TransacaoService(db=db, user_id=current_user.id)
+    return service.listar()
 
 
 @router.get("/{transacao_id}", response_model=TransacaoRead)
 def get_transacao(
     transacao_id: int,
-    current_user: dict[str, str] = Depends(get_current_user),  # noqa: B008,
+    current_user: UserOut = Depends(get_current_user),  # noqa: B008
     db: Session = Depends(get_db),  # noqa: B008
 ) -> TransacaoRead:
-    db_transacao = crud_transacao.get_transacao(db, transacao_id)
-    if not db_transacao:
+    service = TransacaoService(db=db, user_id=current_user.id)
+    transacao = service.buscar_por_id(transacao_id)
+    if not transacao:
         raise HTTPException(status_code=404, detail="Transação não encontrada")
-    return db_transacao
+    return transacao
 
 
 @router.put("/{transacao_id}", response_model=TransacaoRead)
 def update_transacao(
     transacao_id: int,
     transacao: TransacaoUpdate,
-    current_user: dict[str, str] = Depends(get_current_user),  # noqa: B008,
+    current_user: UserOut = Depends(get_current_user),  # noqa: B008
     db: Session = Depends(get_db),  # noqa: B008
 ) -> TransacaoRead:
-    updated = crud_transacao.update_transacao(db, transacao_id, transacao)
-    if not updated:
+    service = TransacaoService(db=db, user_id=current_user.id)
+    atualizada = service.atualizar(transacao_id, transacao)
+    if not atualizada:
         raise HTTPException(status_code=404, detail="Transação não encontrada")
-    return updated
+    return atualizada
 
 
 @router.delete("/{transacao_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_transacao(
     transacao_id: int,
-    current_user: dict[str, str] = Depends(get_current_user),  # noqa: B008,
+    current_user: UserOut = Depends(get_current_user),  # noqa: B008
     db: Session = Depends(get_db),  # noqa: B008
 ) -> None:
-    deleted = crud_transacao.delete_transacao(db, transacao_id)
-    if not deleted:
+    service = TransacaoService(db=db, user_id=current_user.id)
+    sucesso = service.remover(transacao_id)
+    if not sucesso:
         raise HTTPException(status_code=404, detail="Transação não encontrada")

@@ -1,54 +1,46 @@
 # app/services/transacoes.py
 
-from fastapi import HTTPException
+
 from sqlalchemy.orm import Session
 
-from app.crud.conta_corrente import get_conta_corrente
-from app.crud.fatura import get_fatura
-from app.crud.transacao import create_transacao
-from app.schemas.transacao import FormaPagamentoEnum, TipoTransacaoEnum, TransacaoCreate
+from app.crud.transacao import (
+    create_transacao,
+    delete_transacao_by_user,
+    get_transacao_by_id_and_user,
+    listar_transacoes_por_usuario,
+    update_transacao_by_user,
+)
+from app.schemas.transacao import TransacaoCreate, TransacaoRead, TransacaoUpdate
 
 
-def criar_transacao(
-    db: Session, transacao: TransacaoCreate, user_id: int
-) -> TransacaoCreate:
-    if transacao.forma_pagamento == FormaPagamentoEnum.cartao_credito:
-        # Valida existência de fatura
-        if not transacao.fatura_id:
-            raise HTTPException(
-                status_code=400, detail="Fatura é obrigatória para cartão de crédito."
-            )
+class TransacaoService:
+    def __init__(self, db: Session, user_id: int) -> None:
+        self.db = db
+        self.user_id = user_id
 
-        fatura = get_fatura(db, transacao.fatura_id)
+    def criar(self, transacao: TransacaoCreate) -> TransacaoRead:
+        nova = create_transacao(self.db, transacao)
+        return TransacaoRead.model_validate(nova)
 
-        if not fatura:
-            raise HTTPException(
-                status_code=404, detail="Fatura não encontrada ou inativa."
-            )
+    def listar(self) -> list[TransacaoRead]:
+        transacoes = listar_transacoes_por_usuario(self.db, self.user_id)
+        return [TransacaoRead.model_validate(t) for t in transacoes]
 
-        # Atualiza valor da fatura
-        fatura.valor_total += transacao.valor
-        db.add(fatura)
-        db.commit()
-        db.refresh(fatura)
+    def buscar_por_id(self, transacao_id: int) -> TransacaoRead | None:
+        transacao = get_transacao_by_id_and_user(self.db, transacao_id, self.user_id)
+        if not transacao:
+            return None
+        return TransacaoRead.model_validate(transacao)
 
-    else:
-        # Para qualquer outro tipo de pagamento, atualizar saldo da conta
-        conta = get_conta_corrente(db, transacao.conta_origem_id)
+    def atualizar(
+        self, transacao_id: int, transacao_in: TransacaoUpdate
+    ) -> TransacaoRead | None:
+        atualizada = update_transacao_by_user(
+            self.db, transacao_id, transacao_in, self.user_id
+        )
+        if not atualizada:
+            return None
+        return TransacaoRead.model_validate(atualizada)
 
-        if not conta:
-            raise HTTPException(
-                status_code=404, detail="Conta de origem não encontrada."
-            )
-
-        if transacao.tipo == TipoTransacaoEnum.saida:
-            conta.saldo_inicial -= transacao.valor
-        else:
-            conta.saldo_inicial += transacao.valor
-
-        db.add(conta)
-        db.commit()
-        db.refresh(conta)
-
-    # Cria a transação em si
-    return create_transacao(db=db, transacao=transacao, user_id=user_id)
+    def remover(self, transacao_id: int) -> bool:
+        return delete_transacao_by_user(self.db, transacao_id, self.user_id)

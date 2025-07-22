@@ -108,3 +108,26 @@ def delete_fatura(db: Session, fatura_id: int, executor_id: int) -> bool:
     db.add(auditoria)
     db.commit()
     return True
+
+
+def validar_unicidade(
+    db: Session,
+    cartao_id: int,
+    mes: int,
+    ano: int,
+) -> bool | dict[str, int]:
+    fatura = (
+        db.query(Fatura)
+        .filter(
+            Fatura.cartao_id == cartao_id,
+            Fatura.mes == mes,
+            Fatura.ano == ano,
+            Fatura.ativo,
+        )
+        .first()
+    )
+
+    if not fatura:
+        return True
+
+    return {"id": fatura.id}
