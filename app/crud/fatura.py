@@ -1,4 +1,5 @@
 # app/crud/fatura.py
+
 from datetime import UTC, datetime
 
 from sqlalchemy.orm import Session
@@ -15,10 +16,8 @@ def create_fatura(db: Session, fatura: FaturaCreate, user_id: int) -> Fatura:
     db.add(db_fatura)
     db.commit()
     db.refresh(db_fatura)
-    # Auditoria
-    from app import models
 
-    auditoria = models.Auditoria(
+    auditoria = Auditoria(
         tabela="faturas",
         registro_id=db_fatura.id,
         acao="create",
@@ -33,35 +32,19 @@ def create_fatura(db: Session, fatura: FaturaCreate, user_id: int) -> Fatura:
 def get_fatura(db: Session, fatura_id: int) -> Fatura | None:
     return (
         db.query(Fatura)
-        .filter(
-            Fatura.id == fatura_id,
-            Fatura.deleted_at.is_(None),
-        )
+        .filter(Fatura.id == fatura_id, Fatura.deleted_at.is_(None))
         .first()
     )
 
 
-def validar_unicidade(
-    db: Session,
-    cartao_id: int,
-    mes: int,
-    ano: int,
-) -> bool | dict[str, int]:
-    fatura = (
+def get_fatura_existente(
+    db: Session, cartao_id: int, mes: int, ano: int
+) -> Fatura | None:
+    return (
         db.query(Fatura)
-        .filter(
-            Fatura.cartao_id == cartao_id,
-            Fatura.mes == mes,
-            Fatura.ano == ano,
-            Fatura.ativo,
-        )
+        .filter_by(cartao_id=cartao_id, mes=mes, ano=ano, ativo=True)
         .first()
     )
-
-    if not fatura:
-        return True
-
-    return {"id": fatura.id}
 
 
 def get_faturas(db: Session, skip: int = 0, limit: int = 100) -> list[Fatura]:
@@ -80,14 +63,17 @@ def update_fatura(
     db_fatura = get_fatura(db, fatura_id)
     if not db_fatura:
         return None
+
     dados_antes = db_fatura.__dict__.copy()
     for attr, value in fatura.model_dump(exclude_unset=True).items():
         setattr(db_fatura, attr, value)
-    db_fatura.updated_by = executor_id  # type: ignore[attr-defined]
-    db_fatura.updated_at = datetime.now(UTC)  # type: ignore[attr-defined]
+
+    db_fatura.updated_by = executor_id
+    db_fatura.updated_at = datetime.now(UTC)
+
     db.commit()
     db.refresh(db_fatura)
-    # Auditoria
+
     auditoria = Auditoria(
         tabela="faturas",
         registro_id=db_fatura.id,
@@ -98,7 +84,6 @@ def update_fatura(
     )
     db.add(auditoria)
     db.commit()
-    db.refresh(db_fatura)
     return db_fatura
 
 
@@ -106,11 +91,13 @@ def delete_fatura(db: Session, fatura_id: int, executor_id: int) -> bool:
     db_fatura = get_fatura(db, fatura_id)
     if not db_fatura:
         return False
-    db_fatura.deleted_by = executor_id  # type: ignore[attr-defined]
-    db_fatura.deleted_at = datetime.now(UTC)  # type: ignore[attr-defined]
+
+    db_fatura.deleted_by = executor_id
+    db_fatura.deleted_at = datetime.now(UTC)
+
     db.commit()
     db.refresh(db_fatura)
-    # Auditoria
+
     auditoria = Auditoria(
         tabela="faturas",
         registro_id=db_fatura.id,
@@ -121,13 +108,3 @@ def delete_fatura(db: Session, fatura_id: int, executor_id: int) -> bool:
     db.add(auditoria)
     db.commit()
     return True
-
-
-def get_fatura_existente(
-    db: Session, cartao_id: int, mes: int, ano: int
-) -> Fatura | None:
-    return (
-        db.query(Fatura)
-        .filter_by(cartao_id=cartao_id, mes=mes, ano=ano, ativo=True)
-        .first()
-    )
