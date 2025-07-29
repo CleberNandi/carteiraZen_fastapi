@@ -1,8 +1,8 @@
 from fastapi.testclient import TestClient
+from models.base import Base
 import pyotp
 import pytest
 
-from app.db.base import Base
 from app.db.session import SessionLocal, engine
 from app.main import app
 from tests.factories import create_user_with_2fa, create_user_without_2fa

@@ -1,7 +1,7 @@
-from pydantic import BaseModel, ConfigDict
+from app.schemas.base import BaseSchema
 
 
-class UserBase(BaseModel):
+class UserBase(BaseSchema):
     name: str
     email: str
 
@@ -9,11 +9,10 @@ class UserBase(BaseModel):
 class UserCreate(UserBase):
     hashed_password: str | None = None
     totp_secret: str | None = None
-    is_active: bool
-    is_superuser: bool
-    is_2fa_enabled: bool
+    is_active: bool = True
+    is_superuser: bool = False
+    is_2fa_enabled: bool = False
 
 
 class UserOut(UserBase):
     id: int
-    model_config = ConfigDict(from_attributes=True)

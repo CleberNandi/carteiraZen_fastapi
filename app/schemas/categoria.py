@@ -1,14 +1,14 @@
-from pydantic import BaseModel, ConfigDict
+from app.schemas.base import BaseSchema
 
 
-class CategoriaBase(BaseModel):
+class CategoriaBase(BaseSchema):
     ativo: bool | None = True
     descricao: str
+    user_id: int
 
 
 class CategoriaCreate(CategoriaBase):
     descricao: str
-    user_id: int
 
 
 class CategoriaUpdate(CategoriaBase):
@@ -17,5 +17,3 @@ class CategoriaUpdate(CategoriaBase):
 
 class CategoriaRead(CategoriaBase):
     id: int
-
-    model_config = ConfigDict(from_attributes=True)

@@ -1,9 +1,9 @@
 from datetime import datetime
 
-from pydantic import BaseModel
+from app.schemas.base import BaseSchema
 
 
-class AuditoriaBase(BaseModel):
+class AuditoriaBase(BaseSchema):
     tabela: str
     registro_id: int
     acao: str
@@ -18,7 +18,7 @@ class Auditoria(AuditoriaBase):
     id: int
 
 
-class AuditoriaFiltro(BaseModel):
+class AuditoriaFiltro(BaseSchema):
     tabela: str | None = None
     registro_id: int | None = None
     acao: str | None = None

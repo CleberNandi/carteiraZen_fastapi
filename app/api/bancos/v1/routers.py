@@ -2,6 +2,7 @@ from collections.abc import Sequence
 
 from core.dependencies import get_current_user
 from fastapi import APIRouter, Depends, HTTPException
+from schemas.user import UserOut
 from sqlalchemy.orm import Session
 
 from app.crud import banco as crud_banco
@@ -15,7 +16,7 @@ router = APIRouter()
 def read_bancos(
     skip: int = 0,
     limit: int = 100,
-    current_user: dict[str, str] = Depends(get_current_user),  # noqa: B008
+    _: UserOut = Depends(get_current_user),  # noqa: B008
     db: Session = Depends(get_db),  # noqa: B008
 ) -> Sequence[Banco]:
     return crud_banco.get_bancos(db, skip=skip, limit=limit)
@@ -24,7 +25,7 @@ def read_bancos(
 @router.get("/bancos/{banco_id}", response_model=Banco, tags=["Bancos"])
 def read_banco(
     banco_id: int,
-    current_user: dict[str, str] = Depends(get_current_user),  # noqa: B008,
+    _: UserOut = Depends(get_current_user),  # noqa: B008,
     db: Session = Depends(get_db),  # noqa: B008
 ) -> Banco:
     db_banco = crud_banco.get_banco(db, banco_id=banco_id)
@@ -36,29 +37,27 @@ def read_banco(
 @router.post("/bancos/", response_model=Banco, tags=["Bancos"])
 def create_banco(
     banco: BancoCreate,
-    executor_id: int,
-    current_user: dict[str, str] = Depends(get_current_user),  # noqa: B008,
+    current_user: UserOut = Depends(get_current_user),  # noqa: B008,
     db: Session = Depends(get_db),  # noqa: B008
 ) -> Banco:
     db_banco = crud_banco.get_banco_by_codigo(db, codigo=banco.codigo)
     if db_banco:
         raise HTTPException(status_code=400, detail="Código de banco já cadastrado")
-    return crud_banco.create_banco(db=db, banco=banco, user_id=executor_id)
+    return crud_banco.create_banco(db=db, banco=banco, user_id=current_user.id)
 
 
 @router.put("/bancos/{banco_id}", response_model=Banco, tags=["Bancos"])
 def update_banco(
     banco_id: int,
     banco: BancoCreate,
-    executor_id: int,
-    current_user: dict[str, str] = Depends(get_current_user),  # noqa: B008,
+    current_user: UserOut = Depends(get_current_user),  # noqa: B008,
     db: Session = Depends(get_db),  # noqa: B008
 ) -> Banco:
     db_banco = crud_banco.get_banco(db, banco_id=banco_id)
     if db_banco is None:
         raise HTTPException(status_code=404, detail="Banco não encontrado")
     banco_atualizado = crud_banco.update_banco(
-        db=db, banco_id=banco_id, banco=banco, user_id=executor_id
+        db=db, banco_id=banco_id, banco=banco, user_id=current_user.id
     )
     if banco_atualizado is None:
         raise HTTPException(status_code=404, detail="Banco não encontrado")
@@ -68,11 +67,10 @@ def update_banco(
 @router.delete("/bancos/{banco_id}", tags=["Bancos"])
 def delete_banco(
     banco_id: int,
-    executor_id: int,
-    current_user: dict[str, str] = Depends(get_current_user),  # noqa: B008,
+    current_user: UserOut = Depends(get_current_user),  # noqa: B008,
     db: Session = Depends(get_db),  # noqa: B008
 ) -> dict[str, str]:
-    sucesso = crud_banco.delete_banco(db=db, banco_id=banco_id, user_id=executor_id)
+    sucesso = crud_banco.delete_banco(db=db, banco_id=banco_id, user_id=current_user.id)
     if not sucesso:
         raise HTTPException(status_code=404, detail="Banco não encontrado")
     return {"detail": "Banco removido com sucesso"}

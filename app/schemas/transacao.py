@@ -1,7 +1,7 @@
 from datetime import date, datetime
 import enum
 
-from pydantic import BaseModel, ConfigDict
+from app.schemas.base import BaseSchema
 
 
 class TipoTransacaoEnum(str, enum.Enum):
@@ -17,7 +17,7 @@ class FormaPagamentoEnum(str, enum.Enum):
     cartao_credito = "cartao_credito"
 
 
-class TransacaoBase(BaseModel):
+class TransacaoBase(BaseSchema):
     descricao: str
     valor: float
     data: date
@@ -27,26 +27,25 @@ class TransacaoBase(BaseModel):
     forma_pagamento: FormaPagamentoEnum
     fatura_id: int | None = None
     user_id: int | None = None
-    model_config = ConfigDict(from_attributes=True)
 
 
 class TransacaoCreate(TransacaoBase):
     pass
 
 
-class TransacaoUpdate(BaseModel):
+class TransacaoUpdate(BaseSchema):
     descricao: str | None = None
     valor: float | None = None
     data: date | None = None
     tipo: TipoTransacaoEnum | None = None
+    forma_pagamento: FormaPagamentoEnum
     categoria_id: int | None = None
     conta_origem_id: int | None = None
     fatura_id: int | None = None
-    model_config = ConfigDict(from_attributes=True)
+    user_id: int | None = None
 
 
 class TransacaoRead(TransacaoBase):
     id: int
     created_at: datetime | None = None
     updated_at: datetime | None = None
-    model_config = ConfigDict(from_attributes=True)

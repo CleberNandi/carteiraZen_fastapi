@@ -1,7 +1,7 @@
-from pydantic import BaseModel, ConfigDict
+from app.schemas.base import BaseSchema
 
 
-class AgenciaBase(BaseModel):
+class AgenciaBase(BaseSchema):
     numero: str
     digito: str | None = None
     banco_id: int
@@ -15,4 +15,3 @@ class AgenciaCreate(AgenciaBase):
 
 class Agencia(AgenciaBase):
     id: int
-    model_config = ConfigDict(from_attributes=True)

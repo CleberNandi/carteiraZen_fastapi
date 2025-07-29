@@ -1,12 +1,12 @@
-from pydantic import BaseModel
+from app.schemas.base import BaseSchema
 
 
-class Token(BaseModel):
+class Token(BaseSchema):
     access_token: str
     token_type: str = "bearer"  # noqa: S105
 
 
-class LoginRequest(BaseModel):
+class LoginRequest(BaseSchema):
     email: str
     password: str
     totp_token: str | None = None

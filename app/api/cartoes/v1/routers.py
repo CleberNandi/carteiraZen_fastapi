@@ -1,7 +1,8 @@
 from collections.abc import Sequence
 
 from core.dependencies import get_current_user
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException
+from schemas.user import UserOut
 from sqlalchemy.orm import Session
 
 from app.crud.cartao import (
@@ -21,7 +22,7 @@ router = APIRouter(prefix="/cartoes", tags=["Cartões"])
 def listar_cartoes(
     skip: int = 0,
     limit: int = 100,
-    current_user: dict[str, str] = Depends(get_current_user),  # noqa: B008,
+    _: UserOut = Depends(get_current_user),  # noqa: B008,
     db: Session = Depends(get_db),  # noqa: B008
 ) -> Sequence[Cartao]:
     return get_cartoes(db, skip=skip, limit=limit)
@@ -30,7 +31,7 @@ def listar_cartoes(
 @router.get("/{cartao_id}", response_model=Cartao)
 def obter_cartao(
     cartao_id: int,
-    current_user: dict[str, str] = Depends(get_current_user),  # noqa: B008,
+    _: UserOut = Depends(get_current_user),  # noqa: B008,
     db: Session = Depends(get_db),  # noqa: B008
 ) -> Cartao | None:
     cartao = get_cartao(db, cartao_id)
@@ -42,22 +43,20 @@ def obter_cartao(
 @router.post("/", response_model=Cartao)
 def criar_cartao(
     cartao: CartaoCreate,
-    executor_id: int = Query(...),
-    current_user: dict[str, str] = Depends(get_current_user),  # noqa: B008,
+    current_user: UserOut = Depends(get_current_user),  # noqa: B008,
     db: Session = Depends(get_db),  # noqa: B008
 ) -> Cartao:
-    return create_cartao(db, cartao, executor_id)
+    return create_cartao(db, cartao, current_user.id)
 
 
 @router.put("/{cartao_id}", response_model=Cartao)
 def atualizar_cartao(
     cartao_id: int,
     agencia: CartaoCreate,
-    executor_id: int = Query(...),
-    current_user: dict[str, str] = Depends(get_current_user),  # noqa: B008,
+    current_user: UserOut = Depends(get_current_user),  # noqa: B008,
     db: Session = Depends(get_db),  # noqa: B008
 ) -> Cartao | None:
-    cartao = update_cartao(db, cartao_id, agencia, executor_id)
+    cartao = update_cartao(db, cartao_id, agencia, current_user.id)
     if not cartao:
         raise HTTPException(status_code=404, detail="Cartão não encontrado")
     return cartao
@@ -66,11 +65,10 @@ def atualizar_cartao(
 @router.delete("/{cartao_id}")
 def deletar_cartao(
     cartao_id: int,
-    executor_id: int = Query(...),
-    current_user: dict[str, str] = Depends(get_current_user),  # noqa: B008,
+    current_user: UserOut = Depends(get_current_user),  # noqa: B008,
     db: Session = Depends(get_db),  # noqa: B008
 ) -> dict[str, bool]:
-    ok = delete_cartao(db, cartao_id, executor_id)
+    ok = delete_cartao(db, cartao_id, current_user.id)
     if not ok:
         raise HTTPException(status_code=404, detail="Cartão não encontrado")
     return {"ok": True}

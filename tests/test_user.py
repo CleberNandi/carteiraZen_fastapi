@@ -1,7 +1,7 @@
 from fastapi.testclient import TestClient
+from models.base import Base
 import pytest
 
-from app.db.base import Base
 from app.db.session import engine
 from app.main import app
 from tests.factories import user_data, user_data_2

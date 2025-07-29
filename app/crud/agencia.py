@@ -1,12 +1,9 @@
-from datetime import UTC, datetime
-
 from sqlalchemy.orm import Session
 
 from app import models
 from app.schemas.agencia import AgenciaCreate
 
 Agencia = models.Agencia
-Auditoria = models.Auditoria
 
 
 def get_agencia(db: Session, agencia_id: int) -> Agencia | None:
@@ -27,65 +24,23 @@ def get_agencias(db: Session, skip: int = 0, limit: int = 100) -> list[Agencia]:
     )
 
 
-def create_agencia(db: Session, agencia: AgenciaCreate, user_id: int) -> Agencia:
-    db_agencia = Agencia(**agencia.model_dump(), created_by=user_id)
-    db.add(db_agencia)
-    db.commit()
-    db.refresh(db_agencia)
-    auditoria = Auditoria(
-        tabela="agencias",
-        registro_id=db_agencia.id,
-        acao="create",
-        user_id=user_id,
-        dados_depois=str(agencia.model_dump()),
-    )
-    db.add(auditoria)
-    db.commit()
-    return db_agencia
-
-
-def update_agencia(
-    db: Session, agencia_id: int, agencia: AgenciaCreate, user_id: int
+def get_agencia_por_numero_banco(
+    db: Session, numero: str, banco_id: int
 ) -> Agencia | None:
-    db_agencia = get_agencia(db, agencia_id)
-    if db_agencia is None:
-        return None
-    dados_antes = db_agencia.__dict__.copy()
-    for attr, value in agencia.model_dump().items():
-        setattr(db_agencia, attr, value)
-    db_agencia.updated_by = user_id
-    db_agencia.updated_at = datetime.now(UTC)
-    db.commit()
-    db.refresh(db_agencia)
-    auditoria = Auditoria(
-        tabela="agencias",
-        registro_id=db_agencia.id,
-        acao="update",
-        user_id=user_id,
-        dados_antes=str(dados_antes),
-        dados_depois=str(agencia.model_dump()),
+    return (
+        db.query(Agencia)
+        .filter_by(numero=numero, banco_id=banco_id, deleted_at=None)
+        .first()
     )
-    db.add(auditoria)
+
+
+def create_agencia(db: Session, dados: AgenciaCreate, user_id: int) -> Agencia:
+    agencia = Agencia(**dados.model_dump(), created_by=user_id)
+    db.add(agencia)
     db.flush()
-    db.commit()
-    db.refresh(auditoria)
-    return db_agencia
+    return agencia
 
 
-def delete_agencia(db: Session, agencia_id: int, user_id: int) -> bool:
-    db_agencia = get_agencia(db, agencia_id)
-    if db_agencia is None:
-        return False
-    db_agencia.deleted_by = user_id
-    db_agencia.deleted_at = datetime.now(UTC)
-    db.commit()
-    auditoria = Auditoria(
-        tabela="agencias",
-        registro_id=db_agencia.id,
-        acao="delete",
-        user_id=user_id,
-        dados_antes=str(db_agencia.__dict__),
-    )
-    db.add(auditoria)
-    db.commit()
-    return True
+def soft_delete_agencia(db: Session, agencia: Agencia) -> Agencia:
+    db.flush()
+    return agencia

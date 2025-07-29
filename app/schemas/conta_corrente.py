@@ -1,6 +1,6 @@
 from enum import Enum
 
-from pydantic import BaseModel, ConfigDict
+from app.schemas.base import BaseSchema
 
 
 class TipoContaEnum(str, Enum):
@@ -8,7 +8,7 @@ class TipoContaEnum(str, Enum):
     poupanca = "poupanca"
 
 
-class ContaBase(BaseModel):
+class ContaBase(BaseSchema):
     numero: str
     digito: str
     nome: str
@@ -29,4 +29,3 @@ class ContaUpdate(ContaBase):
 
 class ContaOut(ContaBase):
     id: int
-    model_config = ConfigDict(from_attributes=True)

@@ -1,7 +1,7 @@
 from datetime import datetime
 from enum import Enum
 
-from pydantic import BaseModel, ConfigDict
+from app.schemas.base import BaseSchema
 
 
 class StatusFaturaEnum(str, Enum):
@@ -10,7 +10,7 @@ class StatusFaturaEnum(str, Enum):
     paga = "paga"
 
 
-class FaturaBase(BaseModel):
+class FaturaBase(BaseSchema):
     cartao_id: int
     mes: int
     ano: int
@@ -27,8 +27,6 @@ class FaturaUpdate(FaturaBase):
     status: StatusFaturaEnum | None = None
     ativo: bool | None = None
 
-    model_config = ConfigDict(from_attributes=True)
-
 
 class FaturaRead(FaturaBase):
     id: int
@@ -37,5 +35,3 @@ class FaturaRead(FaturaBase):
     ativo: bool
     user_id: int
     created_at: datetime
-
-    model_config = ConfigDict(from_attributes=True)

@@ -1,6 +1,6 @@
 from fastapi.testclient import TestClient
+from models.base import Base
 
-from app.db.base import Base
 from app.db.session import engine
 from app.main import app
 

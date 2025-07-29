@@ -1,7 +1,7 @@
-from pydantic import BaseModel, ConfigDict
+from app.schemas.base import BaseSchema
 
 
-class CartaoBase(BaseModel):
+class CartaoBase(BaseSchema):
     numero: str  # Número do cartão (mascarado)
     nome_impresso: str  # Nome impresso no cartão
     validade: str  # Validade do cartão (formato YYYY-MM)
@@ -18,4 +18,3 @@ class CartaoCreate(CartaoBase):
 
 class Cartao(CartaoBase):
     id: int  # ID do cartão
-    model_config = ConfigDict(from_attributes=True)

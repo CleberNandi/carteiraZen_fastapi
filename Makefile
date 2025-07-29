@@ -40,8 +40,14 @@ run:
 dev:
 	ENV_MODE=dev uv run uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 
+
 hml:
 	ENV_MODE=hml uv run uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
+.PHONY: dev ngrok
+# Rodar ngrok para expor porta 8000
+ngrok:
+	ENV_MODE=dev ngrok http 8000
 
 # Executa os testes automatizados com pytest, garantindo que o diretório app seja encontrado
 # pelo Python (PYTHONPATH=.)

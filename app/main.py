@@ -28,12 +28,20 @@ app = FastAPI(
 
 app.add_exception_handler(RequestValidationError, validation_exception_handler)  # type: ignore
 
+orings = [
+    "http://localhost:5173",
+    "http://localhost:5174",
+    "http://192.168.83.21:5173",
+    "http://192.168.83.21:5174",
+    "http://192.168.83.21:8000",
+    "exp://",  # se usar Expo Go
+    "https://*.exp.direct",
+    "https://*.expo.dev",
+    "https://zxcffa0-anonymous-8081.exp.direct",
+]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173",
-        # "*",
-    ],  # ou ["*"] para testar (não recomendado em produção)
+    allow_origins=orings,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

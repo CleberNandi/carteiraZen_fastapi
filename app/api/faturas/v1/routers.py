@@ -66,7 +66,7 @@ def update_fatura(
     return updated
 
 
-@router.delete("/faturas/{fatura_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/{fatura_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_fatura(
     fatura_id: int,
     current_user: UserOut = Depends(get_current_user),  # noqa: B008,
