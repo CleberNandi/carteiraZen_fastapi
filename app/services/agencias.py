@@ -48,12 +48,10 @@ class AgenciaService:
         self.db.refresh(agencia)
         return Agencia.model_validate(agencia)
 
-    def atualizar(
-        self, agencia_id: int, dados: AgenciaCreate, user_id: int
-    ) -> Agencia | None:
+    def atualizar(self, agencia_id: int, dados: AgenciaCreate, user_id: int) -> Agencia:
         agencia = agencia_crud.get_agencia(self.db, agencia_id)
         if not agencia:
-            return None
+            raise HTTPException(status_code=404, detail="Agência não encontrada")
 
         dados_antes = serialize_mapped(agencia)
 
@@ -84,13 +82,14 @@ class AgenciaService:
         self.db.refresh(agencia)
         return Agencia.model_validate(agencia)
 
-    def remover(self, agencia_id: int, user_id: int) -> bool:
+    def remover(self, agencia_id: int, user_id: int) -> None:
         agencia = agencia_crud.get_agencia(self.db, agencia_id)
         if not agencia:
-            return False
+            raise HTTPException(status_code=404, detail="Agência não encontrada")
 
         agencia.deleted_by = user_id
         agencia.deleted_at = datetime.now(UTC)
+        agencia.ativo = False
 
         agencia = agencia_crud.soft_delete_agencia(self.db, agencia)
 
@@ -104,4 +103,3 @@ class AgenciaService:
         )
 
         self.db.commit()
-        return True

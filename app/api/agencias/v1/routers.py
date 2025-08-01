@@ -50,10 +50,7 @@ def atualizar_agencia(
     current_user: User = Depends(get_current_user),  # noqa: B008
     db: Session = Depends(get_db),  # noqa: B008
 ) -> Agencia:
-    ag = AgenciaService(db).atualizar(agencia_id, agencia, current_user.id)
-    if not ag:
-        raise HTTPException(status_code=404, detail="Agência não encontrada")
-    return ag
+    return AgenciaService(db).atualizar(agencia_id, agencia, current_user.id)
 
 
 @router.delete("/{agencia_id}")
@@ -61,8 +58,6 @@ def deletar_agencia(
     agencia_id: int,
     current_user: User = Depends(get_current_user),  # noqa: B008
     db: Session = Depends(get_db),  # noqa: B008
-) -> dict[str, bool]:
-    ok = AgenciaService(db).remover(agencia_id, current_user.id)
-    if not ok:
-        raise HTTPException(status_code=404, detail="Agência não encontrada")
-    return {"ok": True}
+) -> dict[str, str]:
+    AgenciaService(db).remover(agencia_id, current_user.id)
+    return {"detail": "Agência removida com sucesso"}

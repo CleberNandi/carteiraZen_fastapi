@@ -1,4 +1,4 @@
-from app.crud.banco import create_banco, get_banco_by_codigo
+from app.crud.banco import create_banco, get_banco_por_codigo
 from app.db.session import SessionLocal
 from app.schemas.banco import BancoCreate
 
@@ -89,7 +89,7 @@ BANCOS_PRINCIPAIS = [
 def seed_bancos(user_id: int | None = None) -> None:
     db = SessionLocal()
     for banco in BANCOS_PRINCIPAIS:
-        exists = get_banco_by_codigo(db, str(banco["codigo"]))
+        exists = get_banco_por_codigo(db, str(banco["codigo"]))
         if not exists:
             banco_obj = BancoCreate(
                 nome=str(banco["nome"]),
