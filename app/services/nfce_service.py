@@ -11,10 +11,10 @@ def extrair_dados_nfce(html: str) -> dict[str, Any]:
     try:
         # Emitente e CNPJ
         txt_center = soup.find("div", class_="txtCenter")
-        emitente = txt_center.find("div", class_="txtTopo").text.strip()
-        cnpj_text = txt_center.find_all("div", class_="text")[0].text.strip()
-        endereco = txt_center.find_all("div", class_="text")[1].text.strip()
-        cnpj_match = re.search(r"(\d{2}\.\d{3}\.\d{3}/\d{4}-\d{2})", cnpj_text)
+        emitente = txt_center.find("div", class_="txtTopo").text.strip()  # type: ignore
+        cnpj_text = txt_center.find_all("div", class_="text")[0].text.strip()  # type: ignore
+        endereco = txt_center.find_all("div", class_="text")[1].text.strip()  # type: ignore
+        cnpj_match = re.search(r"(\d{2}\.\d{3}\.\d{3}/\d{4}-\d{2})", cnpj_text)  # type: ignore
         cnpj = cnpj_match.group(1) if cnpj_match else None
 
         # Itens
@@ -31,15 +31,18 @@ def extrair_dados_nfce(html: str) -> dict[str, Any]:
             "div", string=re.compile("Informações gerais da Nota")
         ) or soup.find("div", class_="ui-collapsible-content")
 
-        li_info = info_geral_div.find("li", class_="ui-li-static")
-        texto_info = li_info.get_text(" ", strip=True)
+        li_info = info_geral_div.find("li", class_="ui-li-static")  # type: ignore
+        texto_info = li_info.get_text(" ", strip=True)  # type: ignore
 
-        numero = re.search(r"Número:\s*(\d+)", texto_info).group(1)
-        serie = re.search(r"Série:\s*(\d+)", texto_info).group(1)
+        numero = re.search(r"Número:\s*(\d+)", texto_info).group(1)  # type: ignore
+        serie = re.search(r"Série:\s*(\d+)", texto_info).group(1)  # type: ignore
         data_emissao = re.search(
-            r"Emissão:\s*(\d{2}/\d{2}/\d{4} \d{2}:\d{2}:\d{2})", texto_info
-        ).group(1)
-        protocolo = re.search(r"Protocolo de Autorização:\s*(\d+)", texto_info).group(1)
+            r"Emissão:\s*(\d{2}/\d{2}/\d{4} \d{2}:\d{2}:\d{2})",
+            texto_info,  # type: ignore
+        ).group(  # type: ignore
+            1
+        )
+        protocolo = re.search(r"Protocolo de Autorização:\s*(\d+)", texto_info).group(1)  # type: ignore
 
         chave_span = soup.find("span", class_="chave")
         chave_acesso = chave_span.text.strip().replace(" ", "") if chave_span else ""
@@ -102,19 +105,21 @@ def processar_linha_item(tr: Tag) -> dict[str, Any] | None:
 
     try:
         td_desc = tds[0]
-        descricao = extrair_texto(td_desc, "txtTit")
+        descricao = extrair_texto(td_desc, "txtTit")  # type: ignore
 
-        quantidade = extrair_valor_regex(td_desc, "Rqtd", r"Qtde\.\:\s*([\d,\.]+)")
-        unidade = extrair_texto_regex(td_desc, "RUN", r"UN:\s*(\S+)")
+        quantidade = extrair_valor_regex(td_desc, "Rqtd", r"Qtde\.\:\s*([\d,\.]+)")  # type: ignore
+        unidade = extrair_texto_regex(td_desc, "RUN", r"UN:\s*(\S+)")  # type: ignore
         valor_unitario = extrair_valor_regex(
-            td_desc, "RvlUnit", r"Vl\. Unit\.\:\s*([\d,\.]+)"
+            td_desc,  # type: ignore
+            "RvlUnit",
+            r"Vl\. Unit\.\:\s*([\d,\.]+)",  # type: ignore
         )
 
         valor_total = None
-        valor_span = tds[1].find("span", class_="valor")
+        valor_span = tds[1].find("span", class_="valor")  # type: ignore
         if valor_span:
             valor_total = float(
-                valor_span.text.strip().replace(".", "").replace(",", ".")
+                valor_span.text.strip().replace(".", "").replace(",", ".")  # type: ignore
             )
     except (AttributeError, ValueError, TypeError):
         return None
