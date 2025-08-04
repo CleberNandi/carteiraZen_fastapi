@@ -1,17 +1,18 @@
 from datetime import UTC, datetime
+from uuid import uuid4
 
+from schemas.conta import ContaCreate, ContaUpdate
 from sqlalchemy.orm import Session
 
 from app import models
-from app.schemas.conta_corrente import ContaCreate, ContaUpdate
 from app.utils.auditoria_utils import registrar_auditoria, serialize_mapped
 from app.utils.model_utils import apply_update_fields
 
 Auditoria = models.Auditoria
-ContaCorrente = models.ContaCorrente
+ContaCorrente = models.Conta
 
 
-def get_conta_corrente(db: Session, conta_id: int) -> ContaCorrente | None:
+def get_conta(db: Session, conta_id: int) -> ContaCorrente | None:
     return (
         db.query(ContaCorrente)
         .filter(ContaCorrente.id == conta_id, ContaCorrente.deleted_at.is_(None))
@@ -19,9 +20,7 @@ def get_conta_corrente(db: Session, conta_id: int) -> ContaCorrente | None:
     )
 
 
-def get_contas_correntes(
-    db: Session, skip: int = 0, limit: int = 100
-) -> list[ContaCorrente]:
+def get_contas(db: Session, skip: int = 0, limit: int = 100) -> list[ContaCorrente]:
     return (
         db.query(ContaCorrente)
         .filter(ContaCorrente.deleted_at.is_(None))
@@ -31,16 +30,16 @@ def get_contas_correntes(
     )
 
 
-def create_conta_corrente(
-    db: Session, conta: ContaCreate, user_id: int
-) -> ContaCorrente:
-    db_conta = ContaCorrente(**conta.model_dump(), created_by=user_id)
+def create_conta(db: Session, conta: ContaCreate, user_id: int) -> ContaCorrente:
+    db_conta = ContaCorrente(
+        **conta.model_dump(), created_by=user_id, sync_uuid=str(uuid4())
+    )
     db.add(db_conta)
     db.flush()
 
     registrar_auditoria(
         db=db,
-        tabela="contas_correntes",
+        tabela="contas",
         registro_id=db_conta.id,
         acao="create",
         user_id=user_id,
@@ -53,7 +52,7 @@ def create_conta_corrente(
     return db_conta
 
 
-def update_conta_corrente(
+def update_conta(
     db: Session, conta: ContaCorrente, conta_data: ContaUpdate, user_id: int
 ) -> ContaCorrente | None:
     dados_antes = serialize_mapped(conta)
@@ -61,7 +60,7 @@ def update_conta_corrente(
     campos_alterados = apply_update_fields(
         model=conta,
         data=conta_data,
-        fields=["nome", "digito", "tipo", "ativo", "saldo_inicial", "nome"],
+        fields=["nome", "tipo", "ativo", "saldo_inicial", "nome"],
     )
 
     if not campos_alterados:
@@ -72,7 +71,7 @@ def update_conta_corrente(
 
     registrar_auditoria(
         db=db,
-        tabela="contas_correntes",
+        tabela="contas",
         registro_id=conta.id,
         acao="update",
         user_id=user_id,
@@ -87,7 +86,7 @@ def update_conta_corrente(
     return conta
 
 
-def delete_conta_corrente(db: Session, conta: ContaCorrente, user_id: int) -> bool:
+def delete_conta(db: Session, conta: ContaCorrente, user_id: int) -> bool:
     dados_antes = serialize_mapped(conta)
 
     conta.deleted_by = user_id
@@ -95,7 +94,7 @@ def delete_conta_corrente(db: Session, conta: ContaCorrente, user_id: int) -> bo
 
     registrar_auditoria(
         db=db,
-        tabela="contas_correntes",
+        tabela="contas",
         registro_id=conta.id,
         acao="delete",
         user_id=user_id,
@@ -107,13 +106,10 @@ def delete_conta_corrente(db: Session, conta: ContaCorrente, user_id: int) -> bo
     return True
 
 
-def get_conta_corrente_por_numero(
-    db: Session, agencia_id: int, numero: str
-) -> ContaCorrente | None:
+def get_conta_por_numero(db: Session, numero: str) -> ContaCorrente | None:
     return (
         db.query(ContaCorrente)
         .filter(
-            ContaCorrente.agencia_id == agencia_id,
             ContaCorrente.numero == numero,
             ContaCorrente.ativo.is_(True),
         )

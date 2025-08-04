@@ -1,4 +1,5 @@
 from typing import Any
+from uuid import uuid4
 
 from core.security import gerar_totp_secret, get_password_hash
 from fastapi import HTTPException
@@ -48,9 +49,10 @@ def create_user(db: Session, user: UserCreate, user_id: int | None = None) -> Us
         email=user.email,
         hashed_password=get_password_hash(user.hashed_password),
         totp_secret=user.totp_secret,
-        is_active=user.is_active,
+        ativo=user.ativo,
         is_superuser=user.is_superuser,
         is_2fa_enabled=user.is_2fa_enabled,
+        sync_uuid=str(uuid4()),
     )
     db.add(db_user)
     db.commit()

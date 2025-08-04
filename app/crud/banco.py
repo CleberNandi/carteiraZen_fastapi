@@ -1,3 +1,5 @@
+from uuid import uuid4
+
 from sqlalchemy.orm import Session
 
 from app import models
@@ -55,7 +57,7 @@ def get_banco_por_nome_todos(db: Session, nome: str) -> Banco | None:
 
 
 def create_banco(db: Session, banco: BancoCreate, user_id: int) -> Banco:
-    db_banco = Banco(**banco.model_dump(), created_by=user_id)
+    db_banco = Banco(**banco.model_dump(), created_by=user_id, sync_uuid=str(uuid4()))
     db.add(db_banco)
     db.flush()
     return db_banco

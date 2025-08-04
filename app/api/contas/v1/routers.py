@@ -2,16 +2,16 @@ from collections.abc import Sequence
 
 from core.dependencies import get_current_user
 from fastapi import APIRouter, Depends
+from schemas.conta import ContaCreate, ContaOut, ContaUpdate
 from sqlalchemy.orm import Session
 
 from app.db.session import get_db
 from app.models import User
-from app.schemas.conta_corrente import ContaCreate, ContaOut, ContaUpdate
 from app.services.contas import ContaService
 
 router = APIRouter(
-    prefix="/contas-correntes",
-    tags=["Contas Correntes"],
+    prefix="/contas",
+    tags=["Contas"],
     dependencies=[Depends(get_current_user)],
 )
 

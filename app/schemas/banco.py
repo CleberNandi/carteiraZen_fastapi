@@ -16,3 +16,4 @@ class BancoCreate(BancoBase):
 
 class Banco(BancoBase):
     id: int
+    sync_uuid: str

@@ -9,10 +9,9 @@ class TipoContaEnum(str, Enum):
 
 
 class ContaBase(BaseSchema):
-    numero: str
-    digito: str
     nome: str
-    agencia_id: int
+    numero: str
+    agencia: str | None = None
     user_id: int
     saldo_inicial: float = 0.0
     tipo: TipoContaEnum = TipoContaEnum.corrente
@@ -23,8 +22,13 @@ class ContaCreate(ContaBase):
     pass
 
 
-class ContaUpdate(ContaBase):
-    pass
+class ContaUpdate(BaseSchema):
+    nome: str
+    numero: str
+    user_id: int
+    saldo_inicial: float = 0.0
+    tipo: TipoContaEnum = TipoContaEnum.corrente
+    ativo: bool = True
 
 
 class ContaOut(ContaBase):

@@ -15,9 +15,10 @@ def seed_usuario_system() -> None:
                 email="system@system.dev",
                 hashed_password=config.PASSWORD_SYSTEM,
                 totp_secret=None,
-                is_active=True,
+                ativo=True,
                 is_superuser=True,
                 is_2fa_enabled=False,
+                plan="basic",
             ),
             user_id=None,
         )

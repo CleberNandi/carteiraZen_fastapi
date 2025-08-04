@@ -8,7 +8,6 @@ from app.models.mixins import AuditMixin
 class Categoria(Base, AuditMixin):
     __tablename__ = "categorias"
 
-    id: Mapped[int] = mapped_column(primary_key=True, index=True)
     descricao: Mapped[str] = mapped_column()
     ativo: Mapped[bool] = mapped_column(default=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)

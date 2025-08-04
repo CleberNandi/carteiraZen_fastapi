@@ -9,6 +9,21 @@ APP_DIR=app
 TEST_DIR=tests
 
 # ========================
+### Variáveis do banco
+# ========================
+DB_NAME ?= carteirazen_db
+DB_USER ?= postgres
+DB_PASS ?= postgres
+DB_HOST ?= localhost
+DB_PORT ?= 5432
+
+# ========================
+### Docker image names
+# ========================
+DOCKER_BASE_IMAGE=clebernandi/fastapi-base:latest
+DOCKER_APP_IMAGE=clebernandi/carteirazen-app:latest
+
+# ========================
 # Comandos principais
 # ========================
 
@@ -79,21 +94,52 @@ format:
 typecheck:
 	pyright
 
-# Sobe o docker-compose
-up:
-	docker-compose up
+# Build da imagem base
+.PHONY: docker-base-build
+docker-base-build:
+	docker build -f Docker.base -t $(DOCKER_BASE_IMAGE) .
 
-up-build:
-	docker-compose up --build
+# Push da imagem base para Docker Hub
+.PHONY: docker-base-push
+docker-base-push:
+	docker push $(DOCKER_BASE_IMAGE)
+
+# Build da imagem do app usando a imagem base
+.PHONY: docker-app-build
+docker-app-build:
+	docker build -t $(DOCKER_APP_IMAGE) .
+
+# Push da imagem do app para Docker Hub
+.PHONY: docker-app-push
+docker-app-push:
+	docker push $(DOCKER_APP_IMAGE)
+
+# Up com build no docker-compose
+.PHONY: docker-up-build-db
+docker-up-build-db:
+	docker compose up --build db
+
+.PHONY: docker-up-build
+docker-up-build:
+	docker compose up --build
+
+# Up sem build, usa imagens locais ou do hub
+.PHONY: docker-up-db
+docker-up-db:
+	docker compose up db
+
+.PHONY: docker-up
+docker-up:
+	docker compose up
 
 # Remove todos os containers e imagens, mas mantém os volumes (dados do banco)
 clean-docker:
-	docker-compose down --rmi all --remove-orphans
+	docker compose down --rmi all --remove-orphans
 	docker system prune -af
 
 # Remove tudo, inclusive volumes (dados do banco serão apagados!)
 clean-docker-all:
-	docker-compose down -v --rmi all --remove-orphans
+	docker compose down -v --rmi all --remove-orphans
 	docker system prune -af
 
 # Backup do banco Postgres do container db para o arquivo backup.sql
@@ -125,6 +171,27 @@ clean:
 	find . -type d -name "__pycache__" -exec rm -r {} +
 	find . -type f -name "*.pyc" -delete
 	rm -rf .pytest_cache .ruff_cache .mypy_cache
+
+# Target para resetar o banco inteiro
+.PHONY: reset-db-local
+reset-db-local:
+	@echo "🎯 Dropando banco $(DB_NAME)..."
+	PGPASSWORD=$(DB_PASS) dropdb --if-exists --host=$(DB_HOST) --port=$(DB_PORT) --username=$(DB_USER) $(DB_NAME)
+	@echo "✅ Banco removido."
+
+	@echo "🎯 Criando banco $(DB_NAME)..."
+	PGPASSWORD=$(DB_PASS) createdb --host=$(DB_HOST) --port=$(DB_PORT) --username=$(DB_USER) $(DB_NAME)
+	@echo "✅ Banco criado."
+
+	@echo "🎯 Executando migrations..."
+	alembic upgrade head
+	@echo "✅ Reset completo!"
+
+.PHONY: reset-db
+reset-db:
+	docker exec -it db psql -U postgres -c "DROP DATABASE IF EXISTS carteirazen_db;"
+	docker exec -it db psql -U postgres -c "CREATE DATABASE carteirazen_db;"
+	alembic upgrade head
 
 # ========================
 # Ajuda

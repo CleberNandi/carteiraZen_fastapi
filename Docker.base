@@ -1,0 +1,42 @@
+# docker.base.debian
+FROM python:3.13-slim
+
+# Evita prompts na instalação
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Atualiza pacotes e instala dependências necessárias para compilar opencv-python e outros pacotes comuns
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    libglib2.0-0 \
+    libsm6 \
+    libxrender1 \
+    libxext6 \
+    libgl1 \
+    libgl1-mesa-glx \
+    libgtk2.0-dev \
+    libgtk-3-dev \
+    libjpeg-dev \
+    libpng-dev \
+    libavcodec-dev \
+    libavformat-dev \
+    libswscale-dev \
+    libv4l-dev \
+    libatlas-base-dev \
+    ffmpeg \
+    bash \
+    curl \
+    git \
+    && rm -rf /var/lib/apt/lists/*
+
+# Atualiza pip e instala dependências comuns do seu stack
+RUN pip install --upgrade pip setuptools wheel
+
+# Instala FastAPI, Uvicorn e OpenCV
+RUN pip install fastapi uvicorn[standard] opencv-python
+
+# Apenas para debug, mostra diretórios de instalação dos pacotes
+RUN python -c "import site; print(site.getsitepackages())"
+
+WORKDIR /app
+
+CMD ["uvicorn"]

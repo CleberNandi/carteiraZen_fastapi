@@ -1,6 +1,7 @@
 # app/crud/fatura.py
 
 from datetime import UTC, datetime
+from uuid import uuid4
 
 from sqlalchemy.orm import Session
 
@@ -12,7 +13,7 @@ Auditoria = models.Auditoria
 
 
 def create_fatura(db: Session, fatura: FaturaCreate, user_id: int) -> Fatura:
-    db_fatura = Fatura(**fatura.model_dump(), user_id=user_id)
+    db_fatura = Fatura(**fatura.model_dump(), user_id=user_id, sync_uuid=str(uuid4()))
     db.add(db_fatura)
     db.commit()
     db.refresh(db_fatura)

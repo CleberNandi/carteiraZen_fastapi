@@ -1,4 +1,5 @@
 from datetime import UTC, datetime
+from uuid import uuid4
 
 from sqlalchemy.orm import Session
 
@@ -20,7 +21,7 @@ def get_cartao(db: Session, cartao_id: int) -> Cartao | None:
 def get_cartao_by_codigo(db: Session, codigo: str) -> Cartao | None:
     return (
         db.query(Cartao)
-        .filter(Cartao.codigo == codigo, Cartao.deleted_at.is_(None))
+        .filter(Cartao.id == codigo, Cartao.deleted_at.is_(None))
         .first()
     )
 
@@ -36,7 +37,9 @@ def get_cartoes(db: Session, skip: int = 0, limit: int = 100) -> list[Cartao]:
 
 
 def create_cartao(db: Session, cartao: CartaoCreate, user_id: int) -> Cartao:
-    db_cartao = Cartao(**cartao.model_dump(), created_by=user_id)
+    db_cartao = Cartao(
+        **cartao.model_dump(), created_by=user_id, sync_uuid=str(uuid4())
+    )
     db.add(db_cartao)
     db.commit()
     db.refresh(db_cartao)

@@ -1,7 +1,6 @@
 import enum
 
 from sqlalchemy import (
-    Boolean,
     Enum,
     Float,
     ForeignKey,
@@ -20,16 +19,12 @@ class TipoContaEnum(str, enum.Enum):
     poupanca = "poupanca"
 
 
-class ContaCorrente(Base, AuditMixin):
-    __tablename__ = "contas_correntes"
+class Conta(Base, AuditMixin):
+    __tablename__ = "contas"
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    nome: Mapped[str] = mapped_column(String(100), nullable=False)
     numero: Mapped[str] = mapped_column(String(20), nullable=False)
-    nome: Mapped[str] = mapped_column(String(100), nullable=True)
-    digito: Mapped[str] = mapped_column(String(2), nullable=False)
-    agencia_id: Mapped[int] = mapped_column(
-        Integer, ForeignKey("agencias.id"), nullable=False
-    )
+    agencia: Mapped[str] = mapped_column(String(20), nullable=True)
     user_id: Mapped[int] = mapped_column(
         Integer, ForeignKey("users.id"), nullable=False
     )
@@ -37,7 +32,5 @@ class ContaCorrente(Base, AuditMixin):
     tipo: Mapped[TipoContaEnum] = mapped_column(
         Enum(TipoContaEnum), nullable=False, default=TipoContaEnum.corrente
     )
-    ativo: Mapped[bool] = mapped_column(Boolean, default=True)
 
-    agencia = relationship("Agencia", back_populates="contas")
     user = relationship("User")

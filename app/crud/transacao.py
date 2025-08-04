@@ -1,6 +1,8 @@
 # app/crud/transacao.py
 
 
+from uuid import uuid4
+
 from sqlalchemy.orm import Session
 
 from app.models import Transacao
@@ -8,7 +10,7 @@ from app.schemas.transacao import TransacaoCreate, TransacaoUpdate
 
 
 def create_transacao(db: Session, transacao_in: TransacaoCreate) -> Transacao:
-    db_transacao = Transacao(**transacao_in.model_dump())
+    db_transacao = Transacao(**transacao_in.model_dump(), sync_uuid=str(uuid4()))
     db.add(db_transacao)
     db.commit()
     db.refresh(db_transacao)

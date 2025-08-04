@@ -1,10 +1,11 @@
 # app/crud/categoria.py
 from datetime import UTC, datetime
+from uuid import uuid4
 
 from sqlalchemy.orm import Session
 
 from app import models
-from app.schemas.categoria import CategoriaCreate, CategoriaRead, CategoriaUpdate
+from app.schemas.categoria import CategoriaCreate, CategoriaUpdate
 
 Categoria = models.Categoria
 Auditoria = models.Auditoria
@@ -12,8 +13,8 @@ Auditoria = models.Auditoria
 
 def create_categoria(
     db: Session, categoria: CategoriaCreate, user_id: int
-) -> CategoriaRead:
-    db_categoria = Categoria(**categoria.model_dump())
+) -> Categoria:
+    db_categoria = Categoria(**categoria.model_dump(), sync_uuid=str(uuid4()))
     db.add(db_categoria)
     db.commit()
     db.refresh(db_categoria)

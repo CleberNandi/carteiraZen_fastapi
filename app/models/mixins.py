@@ -6,6 +6,7 @@ from sqlalchemy.orm import Mapped, mapped_column
 
 
 class AuditMixin:
+    id: Mapped[int] = mapped_column(primary_key=True, index=True)
     created_at: Mapped[datetime] = mapped_column(server_default=func.now())
     updated_at: Mapped[datetime | None] = mapped_column(
         onupdate=func.now(), nullable=True
@@ -14,3 +15,6 @@ class AuditMixin:
     created_by: Mapped[int] = mapped_column(nullable=True)
     updated_by: Mapped[int | None] = mapped_column(nullable=True)
     deleted_by: Mapped[int | None] = mapped_column(nullable=True)
+    ativo: Mapped[bool] = mapped_column(default=True)
+    origin: Mapped[str] = mapped_column(default="api", nullable=False)
+    sync_uuid: Mapped[str] = mapped_column(nullable=False)

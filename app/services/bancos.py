@@ -5,11 +5,13 @@ from sqlalchemy.orm import Session
 from utils.auditoria_utils import registrar_auditoria, serialize_mapped
 from utils.model_utils import apply_update_fields
 
-from app import models
+from app import errors, models
 from app.crud import banco as banco_crud
 from app.schemas.banco import Banco, BancoCreate
 
 BancoModel = models.Banco
+
+err_banco = errors.banco
 
 
 class BancoService:
@@ -26,40 +28,45 @@ class BancoService:
 
     def criar(self, dados: BancoCreate, user_id: int) -> Banco:
         # Verifica por CNPJ (inclusive deletados)
-        if dados.cnpj:
+        if dados.cnpj or dados.cnpj == "":
             banco = banco_crud.get_banco_por_cnpj_todos(self.db, dados.cnpj)
             if banco:
                 if banco.deleted_at:
                     raise HTTPException(
                         status_code=400,
-                        detail="Já existe um banco com este CNPJ, mas ele foi desativado. Restaure-o para reutilizar.",
+                        detail=(err_banco.JA_DESATIVADO.format(id=banco.id)),
                     )
                 raise HTTPException(
-                    status_code=400, detail="Banco com este CNPJ já existe."
+                    status_code=400,
+                    detail=err_banco.JA_EXISTE.format(id=banco.id, campo="CNPJ"),
                 )
 
         # Verifica por código
         banco = banco_crud.get_banco_por_codigo_todos(self.db, dados.codigo)
         if banco:
             if banco.deleted_at:
+                banco_id = banco.id
                 raise HTTPException(
                     status_code=400,
-                    detail="Já existe um banco com este código, mas ele foi desativado. Restaure-o para reutilizar.",
+                    detail=err_banco.JA_DESATIVADO.format(id=banco.id),
                 )
             raise HTTPException(
-                status_code=400, detail="Banco com este código já existe."
+                status_code=400,
+                detail=err_banco.JA_EXISTE.format(id=banco.id, campo="Código"),
             )
 
         # Verifica por nome
         banco = banco_crud.get_banco_por_nome_todos(self.db, dados.nome)
         if banco:
             if banco.deleted_at:
+                banco_id = banco.id
                 raise HTTPException(
                     status_code=400,
-                    detail="Já existe um banco com este nome, mas ele foi desativado. Restaure-o para reutilizar.",
+                    detail=err_banco.JA_DESATIVADO.format(id=banco_id),
                 )
             raise HTTPException(
-                status_code=400, detail="Banco com este nome já existe."
+                status_code=400,
+                detail=err_banco.JA_EXISTE.format(id=banco.id, campo="Nome"),
             )
 
         banco = banco_crud.create_banco(self.db, dados, user_id)
@@ -79,7 +86,7 @@ class BancoService:
     def atualizar(self, banco_id: int, dados: BancoCreate, user_id: int) -> Banco:
         banco = banco_crud.get_banco(self.db, banco_id)
         if not banco:
-            raise HTTPException(status_code=404, detail="Banco não encontrado")
+            raise HTTPException(status_code=404, detail=err_banco.NAO_ENCONTRADO)
 
         dados_antes = serialize_mapped(banco)
 
@@ -111,7 +118,7 @@ class BancoService:
     def remover(self, banco_id: int, user_id: int) -> None:
         banco = banco_crud.get_banco(self.db, banco_id)
         if not banco:
-            raise HTTPException(status_code=404, detail="Banco não encontrado")
+            raise HTTPException(status_code=404, detail=err_banco.NAO_ENCONTRADO)
 
         banco.deleted_by = user_id
         banco.deleted_at = datetime.now(UTC)
