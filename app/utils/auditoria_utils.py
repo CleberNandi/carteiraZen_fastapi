@@ -22,7 +22,7 @@ def registrar_auditoria(
     tabela: str,
     registro_id: int,
     acao: str,
-    user_id: int,
+    user_id: int | None,
     dados_antes: dict[str, Any] | None = None,
     dados_input: dict[str, Any] | None = None,
     dados_depois: dict[str, Any] | None = None,

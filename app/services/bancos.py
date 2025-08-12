@@ -24,7 +24,7 @@ class BancoService:
         banco = banco_crud.get_banco(self.db, banco_id)
         return Banco.model_validate(banco) if banco else None
 
-    def criar(self, dados: BancoCreate, user_id: int) -> Banco:
+    def criar(self, dados: BancoCreate, user_id: int | None) -> Banco:
         # Verifica por CNPJ (inclusive deletados)
         if dados.cnpj or dados.cnpj == "":
             banco = banco_crud.get_banco_por_cnpj_todos(self.db, dados.cnpj)

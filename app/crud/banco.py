@@ -10,7 +10,9 @@ Banco = models.Banco
 
 def get_banco(db: Session, banco_id: int) -> Banco | None:
     return (
-        db.query(Banco).filter(Banco.id == banco_id, Banco.deleted_at.is_(None)).first()
+        db.query(Banco)
+        .filter(Banco.codigo == banco_id, Banco.deleted_at.is_(None))
+        .first()
     )
 
 
@@ -56,7 +58,7 @@ def get_banco_por_nome_todos(db: Session, nome: str) -> Banco | None:
     return db.query(Banco).filter(Banco.nome == nome).first()
 
 
-def create_banco(db: Session, banco: BancoCreate, user_id: int) -> Banco:
+def create_banco(db: Session, banco: BancoCreate, user_id: int | None) -> Banco:
     db_banco = Banco(**banco.model_dump(), created_by=user_id, sync_uuid=str(uuid4()))
     db.add(db_banco)
     db.flush()

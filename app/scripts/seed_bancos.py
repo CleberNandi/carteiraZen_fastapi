@@ -30,15 +30,3 @@ def seed_bancos(user_id: int | None = None) -> None:
             BancoService(db).criar(obj, user_id)
 
     db.close()
-
-
-if __name__ == "__main__":
-    from app.models.user import User
-
-    db = SessionLocal()
-    user = db.query(User).filter(User.email == "system@system.local").first()
-    db.close()
-    system_id = user.id if isinstance(getattr(user, "id", None), int) else None
-
-    seed_bancos(user_id=system_id)
-    print("Seed de bancos executado com sucesso!")
