@@ -53,7 +53,7 @@ def fake_user(db_session: Session) -> User:
 
 
 @pytest.fixture
-def client_with_auth_override() -> TestClient:
+def client_with_auth_override() -> Generator[TestClient]:
     # Mock do get_current_user para sempre retornar um usuário fake
     def override_get_current_user() -> User:
         return User(id=1, name="Test User", email="test@example.com")
