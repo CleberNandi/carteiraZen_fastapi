@@ -17,15 +17,15 @@ class FaturaBase(BaseSchema):
 
 
 class FaturaCreate(FaturaBase):
-    valor_total: float | None = None
-    status: StatusFaturaEnum | None = None
-    ativo: bool | None = None
+    valor_total: float | None = 0
+    status: StatusFaturaEnum | None = StatusFaturaEnum.aberta
+    ativo: bool | None = True
 
 
 class FaturaUpdate(FaturaBase):
     valor_total: float | None = None
-    status: StatusFaturaEnum | None = None
-    ativo: bool | None = None
+    status: StatusFaturaEnum | None = StatusFaturaEnum.aberta
+    ativo: bool | None = True
 
 
 class FaturaRead(FaturaBase):

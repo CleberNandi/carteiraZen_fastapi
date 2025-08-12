@@ -1,5 +1,7 @@
 import enum
 
+from mixins.auditoria_mixins import AuditMixin
+from mixins.sync_mixins import SyncMixin
 from sqlalchemy import (
     Enum,
     Float,
@@ -11,7 +13,6 @@ from sqlalchemy import (
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base
-from app.models.mixins import AuditMixin
 
 
 class TipoContaEnum(str, enum.Enum):
@@ -19,12 +20,11 @@ class TipoContaEnum(str, enum.Enum):
     poupanca = "poupanca"
 
 
-class Conta(Base, AuditMixin):
+class Conta(Base, AuditMixin, SyncMixin):
     __tablename__ = "contas"
 
     nome: Mapped[str] = mapped_column(String(100), nullable=False)
     numero: Mapped[str] = mapped_column(String(20), nullable=False)
-    agencia: Mapped[str] = mapped_column(String(20), nullable=True)
     user_id: Mapped[int] = mapped_column(
         Integer, ForeignKey("users.id"), nullable=False
     )

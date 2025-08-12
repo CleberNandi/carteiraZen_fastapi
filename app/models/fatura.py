@@ -1,11 +1,12 @@
+from mixins.auditoria_mixins import AuditMixin
+from mixins.sync_mixins import SyncMixin
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base
-from app.models.mixins import AuditMixin
 
 
-class Fatura(Base, AuditMixin):
+class Fatura(Base, AuditMixin, SyncMixin):
     __tablename__ = "faturas"
 
     cartao_id: Mapped[int] = mapped_column(ForeignKey("cartoes.id"))

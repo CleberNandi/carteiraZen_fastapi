@@ -5,11 +5,9 @@ from sqlalchemy.orm import Session
 from utils.auditoria_utils import registrar_auditoria, serialize_mapped
 from utils.model_utils import apply_update_fields
 
-from app import errors, models
+from app import errors
 from app.crud import banco as banco_crud
 from app.schemas.banco import Banco, BancoCreate
-
-BancoModel = models.Banco
 
 err_banco = errors.banco
 

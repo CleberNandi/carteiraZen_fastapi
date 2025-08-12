@@ -2,12 +2,10 @@ from scripts.seed_bancos import seed_bancos
 
 from app.db.session import SessionLocal
 from app.models.user import User
-from app.scripts.seed_usuario_system import seed_usuario_system
 
 
 def seed_all() -> None:
-    cria_bancos = False
-    seed_usuario_system()
+    cria_bancos = True
     db = SessionLocal()
     user = db.query(User).filter(User.email == "system@system.local").first()
     db.close()

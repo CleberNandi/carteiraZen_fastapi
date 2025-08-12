@@ -1,11 +1,12 @@
+from mixins.auditoria_mixins import AuditMixin
+from mixins.sync_mixins import SyncMixin
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db.base import Base
-from app.models.mixins import AuditMixin
 
 
-class Cartao(Base, AuditMixin):
+class Cartao(Base, AuditMixin, SyncMixin):
     __tablename__ = "cartoes"
 
     numero: Mapped[str] = mapped_column(nullable=False, unique=True, index=True)

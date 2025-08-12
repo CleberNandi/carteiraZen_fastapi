@@ -1,4 +1,6 @@
 from datetime import UTC, datetime, timedelta
+import secrets
+import string
 from typing import Any
 
 from jose import jwt
@@ -30,3 +32,14 @@ def create_access_token(
 def gerar_totp_secret() -> str:
     secret: str = pyotp.random_base32()
     return secret
+
+
+def generate_token() -> str:
+    return secrets.token_hex(16)
+
+
+def generate_friendly_token() -> str:
+    chars = string.ascii_uppercase + string.digits
+    part1 = "".join(secrets.choice(chars) for _ in range(4))
+    part2 = "".join(secrets.choice(chars) for _ in range(4))
+    return f"{part1}-{part2}"

@@ -1,5 +1,7 @@
 # app/schemas/nfce.py
 
+from typing import ClassVar
+
 from pydantic import Field
 
 from app.schemas.base import BaseSchema
@@ -27,9 +29,10 @@ class NFCEData(BaseSchema):
     tributos: float
     itens: list[ItemNFCE]
 
-    class Config:
-        allow_population_by_field_name = True
-        extra = "forbid"  # ou 'ignore' se quiser permitir extras sem erro
+    model_config: ClassVar[dict[str, bool | str]] = {
+        "populate_by_name": True,
+        "extra": "forbid",  # ou 'ignore' se quiser permitir extras sem erro
+    }
 
 
 class NFCERequest(BaseSchema):

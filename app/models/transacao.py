@@ -1,11 +1,12 @@
 from datetime import UTC, datetime
 import enum
 
+from mixins.auditoria_mixins import AuditMixin
+from mixins.sync_mixins import SyncMixin
 from sqlalchemy import Enum, ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base
-from app.models.mixins import AuditMixin
 
 
 class FormaPagamentoEnum(str, enum.Enum):
@@ -21,7 +22,7 @@ class TipoTransacaoEnum(str, enum.Enum):
     saida = "saida"
 
 
-class Transacao(Base, AuditMixin):
+class Transacao(Base, AuditMixin, SyncMixin):
     __tablename__ = "transacoes"
 
     descricao: Mapped[str] = mapped_column(String(255))

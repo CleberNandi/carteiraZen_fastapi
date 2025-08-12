@@ -12,9 +12,8 @@ class AuditMixin:
         onupdate=func.now(), nullable=True
     )
     deleted_at: Mapped[datetime | None] = mapped_column(nullable=True)
-    created_by: Mapped[int] = mapped_column(nullable=True)
+    created_by: Mapped[int | None] = mapped_column(nullable=True)
     updated_by: Mapped[int | None] = mapped_column(nullable=True)
     deleted_by: Mapped[int | None] = mapped_column(nullable=True)
     ativo: Mapped[bool] = mapped_column(default=True)
     origin: Mapped[str] = mapped_column(default="api", nullable=False)
-    sync_uuid: Mapped[str] = mapped_column(nullable=False)

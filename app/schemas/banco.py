@@ -8,6 +8,7 @@ class BancoBase(BaseSchema):
     cnpj: str | None = None
     site: str | None = None
     ativo: bool | None = True
+    sync_enabled: bool = True
 
 
 class BancoCreate(BancoBase):

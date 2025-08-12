@@ -27,7 +27,7 @@ def seed_bancos(user_id: int | None = None) -> None:
                 cnpj=banco.get("Document"),
                 site=banco.get("Url"),
             )
-            BancoService(db).criar(obj, user_id or 1)
+            BancoService(db).criar(obj, user_id)
 
     db.close()
 

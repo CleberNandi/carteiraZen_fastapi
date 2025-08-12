@@ -11,7 +11,6 @@ class TipoContaEnum(str, Enum):
 class ContaBase(BaseSchema):
     nome: str
     numero: str
-    agencia: str | None = None
     user_id: int
     saldo_inicial: float = 0.0
     tipo: TipoContaEnum = TipoContaEnum.corrente
