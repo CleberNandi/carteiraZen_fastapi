@@ -8,7 +8,7 @@ from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import create_async_engine
 
 from alembic import context
-from app import models  # noqa: F401 - garante que Alembic veja todos os models
+from app import models  # type: ignore # noqa: F401
 from app.core.config import settings
 from app.core.database import Base
 
@@ -18,10 +18,11 @@ fileConfig(config.config_file_name)
 logger = logging.getLogger("alembic.env")
 
 # Escolhe URL do banco
-if settings.ENV_MODE == "test":
-    DATABASE_URL = "sqlite+aiosqlite:///:memory:"
-else:
-    DATABASE_URL = str(settings.DATABASE_URL)
+DATABASE_URL = (
+    "sqlite+aiosqlite:///:memory:"
+    if settings.ENV_MODE == "test"
+    else str(settings.DATABASE_URL)
+)
 
 # Metadata alvo
 target_metadata = Base.metadata
@@ -38,15 +39,17 @@ def mask_db_url(url: str) -> str:
     return url
 
 
-def validate_env_and_db():
+def validate_env_and_db() -> None:
     """Evita rodar migrations no banco errado."""
     is_sqlite = DATABASE_URL.startswith("sqlite")
     is_postgres = DATABASE_URL.startswith("postgres")
 
     if settings.ENV_MODE == "prod" and not is_postgres:
-        raise RuntimeError("🚫 Produção só pode rodar migrations em PostgreSQL.")
+        message_prod = "🚫 Produção só pode rodar migrations em PostgreSQL."
+        raise RuntimeError(message_prod)
     if settings.ENV_MODE == "test" and not is_sqlite:
-        raise RuntimeError("🚫 Testes só podem rodar migrations em SQLite (in-memory).")
+        message_test = "🚫 Testes só podem rodar migrations em SQLite (in-memory)."
+        raise RuntimeError(message_test)
 
 
 def run_migrations_offline() -> None:

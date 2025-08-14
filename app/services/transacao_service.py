@@ -1,7 +1,9 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
+
 from app.models.transacao import Transacao
 from app.schemas.transacao import TransacaoCreate, TransacaoRead
+
 
 class TransacaoService:
     @staticmethod
@@ -10,23 +12,27 @@ class TransacaoService:
         db.add(transacao)
         await db.commit()
         await db.refresh(transacao)
-        return TransacaoRead.from_orm(transacao)
+        return TransacaoRead.model_validate(transacao)
 
     @staticmethod
     async def get(db: AsyncSession, transacao_id: int) -> TransacaoRead | None:
         result = await db.execute(select(Transacao).where(Transacao.id == transacao_id))
         transacao = result.scalar_one_or_none()
         if transacao:
-            return TransacaoRead.from_orm(transacao)
+            return TransacaoRead.model_validate(transacao)
         return None
 
     @staticmethod
-    async def list(db: AsyncSession, skip: int = 0, limit: int = 100):
+    async def list(
+        db: AsyncSession, skip: int = 0, limit: int = 100
+    ) -> list[TransacaoRead]:
         result = await db.execute(select(Transacao).offset(skip).limit(limit))
-        return [TransacaoRead.from_orm(t) for t in result.scalars().all()]
+        return [TransacaoRead.model_validate(t) for t in result.scalars().all()]
 
     @staticmethod
-    async def update(db: AsyncSession, transacao_id: int, data: dict) -> TransacaoRead | None:
+    async def update(
+        db: AsyncSession, transacao_id: int, data: dict[str, str]
+    ) -> TransacaoRead | None:
         result = await db.execute(select(Transacao).where(Transacao.id == transacao_id))
         transacao = result.scalar_one_or_none()
         if not transacao:
@@ -35,7 +41,7 @@ class TransacaoService:
             setattr(transacao, key, value)
         await db.commit()
         await db.refresh(transacao)
-        return TransacaoRead.from_orm(transacao)
+        return TransacaoRead.model_validate(transacao)
 
     @staticmethod
     async def delete(db: AsyncSession, transacao_id: int) -> bool:

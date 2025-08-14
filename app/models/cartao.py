@@ -1,5 +1,3 @@
-from typing import List
-
 from sqlalchemy import TIMESTAMP, BigInteger, Boolean, Date, ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql import func
@@ -29,7 +27,7 @@ class Cartao(Base):
     usuario_id: Mapped[int] = mapped_column(ForeignKey("usuarios.id"), nullable=False)
 
     # Relacionamentos
-    faturas: Mapped[List["Fatura"]] = relationship(  # noqa: F821 # type: ignore
+    faturas: Mapped[list["Fatura"]] = relationship(  # noqa: F821 # type: ignore
         "Fatura", back_populates="cartao", cascade="all, delete-orphan"
     )
     usuario: Mapped["Usuario"] = relationship(  # noqa: F821 # type: ignore

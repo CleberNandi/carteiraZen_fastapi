@@ -11,13 +11,13 @@ from app.models import (
 )
 
 __all__ = [
-    "usuario",
     "banco",
-    "conta",
-    "categoria",
-    "sub_categoria",
     "cartao",
+    "categoria",
+    "conta",
     "fatura",
+    "sub_categoria",
     "transacao",
     "transacao_parcela",
+    "usuario",
 ]

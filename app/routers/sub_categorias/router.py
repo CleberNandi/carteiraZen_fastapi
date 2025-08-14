@@ -1,5 +1,3 @@
-from typing import List
-
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -13,29 +11,31 @@ router = APIRouter()
 @router.post("/", response_model=SubCategoriaRead)
 async def create_sub_categoria(
     sub_in: SubCategoriaCreate, db: AsyncSession = Depends(get_db)
-):
+) -> SubCategoriaRead:
     return await SubCategoriaService.create(db, sub_in)
 
 
 @router.get("/{sub_id}", response_model=SubCategoriaRead)
-async def get_sub_categoria(sub_id: int, db: AsyncSession = Depends(get_db)):
+async def get_sub_categoria(
+    sub_id: int, db: AsyncSession = Depends(get_db)
+) -> SubCategoriaRead:
     sub = await SubCategoriaService.get(db, sub_id)
     if not sub:
         raise HTTPException(status_code=404, detail="SubCategoria não encontrada")
     return sub
 
 
-@router.get("/", response_model=List[SubCategoriaRead])
+@router.get("/", response_model=list[SubCategoriaRead])
 async def list_sub_categorias(
     skip: int = 0, limit: int = 100, db: AsyncSession = Depends(get_db)
-):
+) -> list[SubCategoriaRead]:
     return await SubCategoriaService.list(db, skip, limit)
 
 
 @router.put("/{sub_id}", response_model=SubCategoriaRead)
 async def update_sub_categoria(
     sub_id: int, data: SubCategoriaCreate, db: AsyncSession = Depends(get_db)
-):
+) -> SubCategoriaRead:
     updated = await SubCategoriaService.update(db, sub_id, data.model_dump())
     if not updated:
         raise HTTPException(status_code=404, detail="SubCategoria não encontrada")
@@ -43,7 +43,9 @@ async def update_sub_categoria(
 
 
 @router.delete("/{sub_id}")
-async def delete_sub_categoria(sub_id: int, db: AsyncSession = Depends(get_db)):
+async def delete_sub_categoria(
+    sub_id: int, db: AsyncSession = Depends(get_db)
+) -> dict[str, bool]:
     deleted = await SubCategoriaService.delete(db, sub_id)
     if not deleted:
         raise HTTPException(status_code=404, detail="SubCategoria não encontrada")

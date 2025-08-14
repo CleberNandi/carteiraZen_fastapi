@@ -1,5 +1,3 @@
-from typing import List
-
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -11,29 +9,31 @@ router = APIRouter()
 
 
 @router.post("/", response_model=FaturaRead)
-async def create_fatura(fatura_in: FaturaCreate, db: AsyncSession = Depends(get_db)):
+async def create_fatura(
+    fatura_in: FaturaCreate, db: AsyncSession = Depends(get_db)
+) -> FaturaRead:
     return await FaturaService.create(db, fatura_in)
 
 
 @router.get("/{fatura_id}", response_model=FaturaRead)
-async def get_fatura(fatura_id: int, db: AsyncSession = Depends(get_db)):
+async def get_fatura(fatura_id: int, db: AsyncSession = Depends(get_db)) -> FaturaRead:
     fatura = await FaturaService.get(db, fatura_id)
     if not fatura:
         raise HTTPException(status_code=404, detail="Fatura não encontrada")
     return fatura
 
 
-@router.get("/", response_model=List[FaturaRead])
+@router.get("/", response_model=list[FaturaRead])
 async def list_faturas(
     skip: int = 0, limit: int = 100, db: AsyncSession = Depends(get_db)
-):
+) -> list[FaturaRead]:
     return await FaturaService.list(db, skip, limit)
 
 
 @router.put("/{fatura_id}", response_model=FaturaRead)
 async def update_fatura(
     fatura_id: int, data: FaturaCreate, db: AsyncSession = Depends(get_db)
-):
+) -> FaturaRead:
     updated = await FaturaService.update(db, fatura_id, data.model_dump())
     if not updated:
         raise HTTPException(status_code=404, detail="Fatura não encontrada")
@@ -41,8 +41,10 @@ async def update_fatura(
 
 
 @router.delete("/{fatura_id}")
-async def delete_fatura(fatura_id: int, db: AsyncSession = Depends(get_db)):
-    deleted = await FaturaService.delete(fatura_id)
+async def delete_fatura(
+    fatura_id: int, db: AsyncSession = Depends(get_db)
+) -> dict[str, bool]:
+    deleted: bool = await FaturaService.delete(db, fatura_id)
     if not deleted:
         raise HTTPException(status_code=404, detail="Fatura não encontrada")
     return {"ok": True}

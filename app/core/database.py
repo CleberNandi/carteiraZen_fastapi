@@ -1,5 +1,8 @@
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
-from sqlalchemy.orm import sessionmaker, declarative_base
+from collections.abc import AsyncGenerator
+
+from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
+from sqlalchemy.orm import declarative_base, sessionmaker
+
 from app.core.config import settings
 
 DATABASE_URL = (
@@ -13,15 +16,14 @@ engine = create_async_engine(DATABASE_URL, echo=False)
 
 # Async Session
 AsyncSessionLocal = sessionmaker(
-    bind=engine,
-    class_=AsyncSession,
-    expire_on_commit=False
+    bind=engine, class_=AsyncSession, expire_on_commit=False
 )
 
 # Base para models
 Base = declarative_base()
 
+
 # Dependency para FastAPI
-async def get_db():
+async def get_db() -> AsyncGenerator[AsyncSession]:
     async with AsyncSessionLocal() as session:
         yield session

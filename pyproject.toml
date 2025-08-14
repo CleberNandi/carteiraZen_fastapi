@@ -52,13 +52,14 @@ target-version = "py313"
 fix = true
 show-fixes = true
 indent-width = 4
-exclude = ["venv", ".venv", "env", ".env", "node_modules", "__pycache__"]
+ignore = ["B008"]
+
 
 [tool.ruff.lint]
 select = [
     "ASYNC", "A", "ANN", "B", "BLE", "C4", "C90", "COM", "E", "EM", "ERA", "EXE", "F", "FBT", "FIX", "I", "ICN", "ISC", "Q", "RET", "RSE", "S", "SIM", "SLF", "T10", "T20", "TC", "TD", "TRY", "UP", "W", "YTT", "RUF", "N",
 ]
-ignore = ["T201", "COM812"]
+ignore = ["T201", "COM812", "B008"]
 
 [tool.ruff.lint.per-file-ignores]
 "tests/**/*.py" = ["ANN201", "S101"]
@@ -118,16 +119,6 @@ junit_family = "xunit2"
 requires = ["setuptools", "wheel"]
 build-backend = "setuptools.build_meta"
 
-[dependency-groups]
-dev = [
-    "coverage>=7.9.2",
-    "pre-commit>=4.2.0",
-    "pyright>=1.1.403",
-    "pytest>=8.4.1",
-    "pytest-asyncio>=1.1.0",
-    "pytest-xdist>=3.8.0",
-    "ruff>=0.12.4",
-]
 
 [tool.setuptools.packages.find]
 where = ["app"]

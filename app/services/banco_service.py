@@ -1,7 +1,9 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
+
 from app.models.banco import Banco
 from app.schemas.banco import BancoCreate, BancoRead
+
 
 class BancoService:
     @staticmethod
@@ -10,23 +12,27 @@ class BancoService:
         db.add(banco)
         await db.commit()
         await db.refresh(banco)
-        return BancoRead.from_orm(banco)
+        return BancoRead.model_validate(banco)
 
     @staticmethod
     async def get(db: AsyncSession, banco_id: int) -> BancoRead | None:
         result = await db.execute(select(Banco).where(Banco.id == banco_id))
         banco = result.scalar_one_or_none()
         if banco:
-            return BancoRead.from_orm(banco)
+            return BancoRead.model_validate(banco)
         return None
 
     @staticmethod
-    async def list(db: AsyncSession, skip: int = 0, limit: int = 100):
+    async def list(
+        db: AsyncSession, skip: int = 0, limit: int = 100
+    ) -> list[BancoRead]:
         result = await db.execute(select(Banco).offset(skip).limit(limit))
-        return [BancoRead.from_orm(b) for b in result.scalars().all()]
+        return [BancoRead.model_validate(b) for b in result.scalars().all()]
 
     @staticmethod
-    async def update(db: AsyncSession, banco_id: int, data: dict) -> BancoRead | None:
+    async def update(
+        db: AsyncSession, banco_id: int, data: dict[str, str]
+    ) -> BancoRead | None:
         result = await db.execute(select(Banco).where(Banco.id == banco_id))
         banco = result.scalar_one_or_none()
         if not banco:
@@ -35,7 +41,7 @@ class BancoService:
             setattr(banco, key, value)
         await db.commit()
         await db.refresh(banco)
-        return BancoRead.from_orm(banco)
+        return BancoRead.model_validate(banco)
 
     @staticmethod
     async def delete(db: AsyncSession, banco_id: int) -> bool:

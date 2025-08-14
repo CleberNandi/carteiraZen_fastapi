@@ -1,6 +1,5 @@
 # app/schemas/transacao.py
 from datetime import date
-from typing import Optional
 
 from pydantic import Field
 
@@ -14,18 +13,18 @@ class TransacaoBase(BaseSchema):
     data_vencimento: date
     data_lancamento: date
     data_efetivacao: date
-    encargos_cents: Optional[int] = 0
-    descontos_cents: Optional[int] = 0
-    recorrente: Optional[bool] = False
-    descricao: Optional[str] = None
-    efetivada: Optional[bool] = True
+    encargos_cents: int | None = 0
+    descontos_cents: int | None = 0
+    recorrente: bool | None = False
+    descricao: str | None = None
+    efetivada: bool | None = True
     cor: str = Field(..., max_length=7)
-    transacao_pai_id: Optional[int] = None
-    conta_origem_id: Optional[int] = None
-    conta_destino_id: Optional[int] = None
-    categoria_id: Optional[int] = None
-    sub_categoria_id: Optional[int] = None
-    fatura_id: Optional[int] = None
+    transacao_pai_id: int | None = None
+    conta_origem_id: int | None = None
+    conta_destino_id: int | None = None
+    categoria_id: int | None = None
+    sub_categoria_id: int | None = None
+    fatura_id: int | None = None
     usuario_id: int
 
 
@@ -37,7 +36,7 @@ class TransacaoCreate(TransacaoBase):
 # Schema usado para leitura
 class TransacaoRead(TransacaoBase):
     id: int
-    created_at: Optional[str]
-    updated_at: Optional[str]
-    deleted_at: Optional[str]
+    created_at: str | None
+    updated_at: str | None
+    deleted_at: str | None
     ativo: bool

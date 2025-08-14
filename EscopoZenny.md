@@ -477,4 +477,3 @@ periodicidade
 * Parcelas: cada parcela é uma linha em TRANSACOES apontando para a transação pai (transacao\_pai\_id).
 * Recorrência: gerenciada em TRANSACOES\_PARCELAS (ex.: mensal, semanal).
 * Soft delete: todas as tabelas principais têm deleted\_at + ativo.
-

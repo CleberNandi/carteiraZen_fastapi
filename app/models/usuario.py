@@ -1,10 +1,19 @@
-from typing import List, Optional
+from typing import TYPE_CHECKING
 
 from sqlalchemy import TIMESTAMP, Boolean, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql import func
 
 from app.core.database import Base
+
+if TYPE_CHECKING:
+    from app.models.cartao import Cartao
+    from app.models.categoria import Categoria
+    from app.models.conta import Conta
+    from app.models.fatura import Fatura
+    from app.models.sub_categoria import SubCategoria
+    from app.models.transacao import Transacao
+    from app.models.transacao_parcela import TransacaoParcela
 
 
 class Usuario(Base):
@@ -14,36 +23,36 @@ class Usuario(Base):
     nome: Mapped[str] = mapped_column(String(100), nullable=False)
     email: Mapped[str] = mapped_column(String(100), unique=True, nullable=False)
     password_hashed: Mapped[str] = mapped_column(String(255), nullable=False)
-    totp_secret: Mapped[Optional[str]] = mapped_column(String(255))
+    totp_secret: Mapped[str | None] = mapped_column(String(255))
     is_superuser: Mapped[bool] = mapped_column(Boolean, default=False)
     is_2fa_enabled: Mapped[bool] = mapped_column(Boolean, default=False)
-    plan: Mapped[Optional[str]] = mapped_column(String(20))
+    plan: Mapped[str | None] = mapped_column(String(20))
     created_at: Mapped[TIMESTAMP] = mapped_column(
         TIMESTAMP, server_default=func.now(), nullable=False
     )
-    updated_at: Mapped[Optional[TIMESTAMP]] = mapped_column(TIMESTAMP, nullable=True)
-    deleted_at: Mapped[Optional[TIMESTAMP]] = mapped_column(TIMESTAMP, nullable=True)
+    updated_at: Mapped[TIMESTAMP | None] = mapped_column(TIMESTAMP, nullable=True)
+    deleted_at: Mapped[TIMESTAMP | None] = mapped_column(TIMESTAMP, nullable=True)
     ativo: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
 
     # Relacionamentos
-    contas: Mapped[List["Conta"]] = relationship(  # noqa: F821 # type: ignore
+    contas: Mapped[list["Conta"]] = relationship(
         "Conta", back_populates="usuario", cascade="all, delete-orphan"
     )
-    categorias: Mapped[List["Categoria"]] = relationship(  # noqa: F821 # type: ignore
+    categorias: Mapped[list["Categoria"]] = relationship(
         "Categoria", back_populates="usuario", cascade="all, delete-orphan"
     )
-    sub_categorias: Mapped[List["SubCategoria"]] = relationship(  # noqa: F821 # type: ignore
+    sub_categorias: Mapped[list["SubCategoria"]] = relationship(
         "SubCategoria", back_populates="usuario", cascade="all, delete-orphan"
     )
-    cartoes: Mapped[List["Cartao"]] = relationship(  # noqa: F821 # type: ignore
+    cartoes: Mapped[list["Cartao"]] = relationship(
         "Cartao", back_populates="usuario", cascade="all, delete-orphan"
     )
-    faturas: Mapped[List["Fatura"]] = relationship(  # noqa: F821 # type: ignore
+    faturas: Mapped[list["Fatura"]] = relationship(
         "Fatura", back_populates="usuario", cascade="all, delete-orphan"
     )
-    transacoes: Mapped[List["Transacao"]] = relationship(  # noqa: F821 # type: ignore
+    transacoes: Mapped[list["Transacao"]] = relationship(
         "Transacao", back_populates="usuario", cascade="all, delete-orphan"
     )
-    transacoes_parcelas: Mapped[List["TransacaoParcela"]] = relationship(  # noqa: F821 # type: ignore
+    transacoes_parcelas: Mapped[list["TransacaoParcela"]] = relationship(
         "TransacaoParcela", back_populates="usuario", cascade="all, delete-orphan"
     )
