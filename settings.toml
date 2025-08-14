@@ -1,0 +1,21 @@
+[default]
+ENV = "dev"
+PROJECT_NAME = "CarteiraZen"
+VERSION = "0.1.0"
+BASE_URL = "app"
+
+[dev]
+ENV = "dev"
+DATABASE_URL = "postgresql+asyncpg://{env:POSTGRES_USER}:{env:POSTGRES_PASSWORD}@{env:POSTGRES_HOST}:{env:POSTGRES_PORT}/{env:POSTGRES_DB}"
+
+[hml]
+ENV = "hml"
+DATABASE_URL = "postgresql+asyncpg://{env:POSTGRES_USER}:{env:POSTGRES_PASSWORD}@{env:POSTGRES_HOST}:{env:POSTGRES_PORT}/{env:POSTGRES_DB}"
+
+[prod]
+ENV = "prod"
+DATABASE_URL = "postgresql+asyncpg://{env:POSTGRES_USER}:{env:POSTGRES_PASSWORD}@{env:POSTGRES_HOST}:{env:POSTGRES_PORT}/{env:POSTGRES_DB}"
+
+[test]
+ENV = "test"
+DATABASE_URL = "sqlite:///./sql_app_test.db"
