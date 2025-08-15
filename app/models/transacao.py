@@ -1,14 +1,14 @@
-from sqlalchemy import TIMESTAMP, BigInteger, Boolean, Date, ForeignKey, String, Text
+from mixins.mixins import Mixins
+from mixins.sync_mixins import SyncMixin
+from sqlalchemy import BigInteger, Boolean, Date, ForeignKey, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy.sql import func
 
 from app.core.database import Base
 
 
-class Transacao(Base):
+class Transacao(Base, Mixins, SyncMixin):
     __tablename__ = "transacoes"
 
-    id: Mapped[int] = mapped_column(primary_key=True)
     tipo: Mapped[str] = mapped_column(String(20), nullable=False)
     valor_cents: Mapped[int] = mapped_column(BigInteger, nullable=False)
     data_vencimento: Mapped[Date] = mapped_column(Date, nullable=False)
@@ -20,12 +20,7 @@ class Transacao(Base):
     descricao: Mapped[str | None] = mapped_column(Text)
     efetivada: Mapped[bool] = mapped_column(Boolean, default=True)
     cor: Mapped[str] = mapped_column(String(7), nullable=False)
-    created_at: Mapped[TIMESTAMP] = mapped_column(
-        TIMESTAMP, server_default=func.now(), nullable=False
-    )
-    updated_at: Mapped[TIMESTAMP | None] = mapped_column(TIMESTAMP)
-    deleted_at: Mapped[TIMESTAMP | None] = mapped_column(TIMESTAMP)
-    ativo: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+
     transacao_pai_id: Mapped[int | None] = mapped_column(ForeignKey("transacoes.id"))
     conta_origem_id: Mapped[int | None] = mapped_column(ForeignKey("contas.id"))
     conta_destino_id: Mapped[int | None] = mapped_column(ForeignKey("contas.id"))

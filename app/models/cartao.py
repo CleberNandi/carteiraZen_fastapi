@@ -1,14 +1,14 @@
-from sqlalchemy import TIMESTAMP, BigInteger, Boolean, Date, ForeignKey, String
+from mixins.mixins import Mixins
+from mixins.sync_mixins import SyncMixin
+from sqlalchemy import BigInteger, Boolean, Date, ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy.sql import func
 
 from app.core.database import Base
 
 
-class Cartao(Base):
+class Cartao(Base, Mixins, SyncMixin):
     __tablename__ = "cartoes"
 
-    id: Mapped[int] = mapped_column(primary_key=True)
     numero: Mapped[str] = mapped_column(String(16), nullable=False)
     descricao: Mapped[str] = mapped_column(String(20), nullable=False)
     bandeira: Mapped[str] = mapped_column(String(20), nullable=False)
@@ -17,12 +17,6 @@ class Cartao(Base):
     vencimento: Mapped[Date] = mapped_column(Date, nullable=False)
     cartao_padrao: Mapped[bool] = mapped_column(Boolean, default=False)
     cor: Mapped[str] = mapped_column(String(7), nullable=False)
-    created_at: Mapped[TIMESTAMP] = mapped_column(
-        TIMESTAMP, server_default=func.now(), nullable=False
-    )
-    updated_at: Mapped[TIMESTAMP | None] = mapped_column(TIMESTAMP)
-    deleted_at: Mapped[TIMESTAMP | None] = mapped_column(TIMESTAMP)
-    ativo: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
     conta_id: Mapped[int] = mapped_column(ForeignKey("contas.id"), nullable=False)
     usuario_id: Mapped[int] = mapped_column(ForeignKey("usuarios.id"), nullable=False)
 

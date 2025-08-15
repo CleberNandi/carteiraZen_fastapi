@@ -1,4 +1,3 @@
-# app/alembic/env.py
 import asyncio
 import logging
 from logging.config import fileConfig
@@ -8,7 +7,7 @@ from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import create_async_engine
 
 from alembic import context
-from app import models  # type: ignore # noqa: F401
+from app import models  # noqa: F401
 from app.core.config import settings
 from app.core.database import Base
 
@@ -17,12 +16,13 @@ config = context.config
 fileConfig(config.config_file_name)
 logger = logging.getLogger("alembic.env")
 
-# Escolhe URL do banco
+# DATABASE_URL já expandido pelo Dynaconf
 DATABASE_URL = (
-    "sqlite+aiosqlite:///:memory:"
-    if settings.ENV_MODE == "test"
-    else str(settings.DATABASE_URL)
+    f"postgresql+asyncpg://{settings.POSTGRES_USER}:{settings.POSTGRES_PASSWORD}"
+    f"@{settings.POSTGRES_HOST}:{settings.POSTGRES_PORT}/{settings.POSTGRES_DB}"
 )
+if settings.ENV_MODE == "test":
+    DATABASE_URL = "sqlite+aiosqlite:///:memory:"
 
 # Metadata alvo
 target_metadata = Base.metadata
@@ -45,23 +45,21 @@ def validate_env_and_db() -> None:
     is_postgres = DATABASE_URL.startswith("postgres")
 
     if settings.ENV_MODE == "prod" and not is_postgres:
-        message_prod = "🚫 Produção só pode rodar migrations em PostgreSQL."
-        raise RuntimeError(message_prod)
+        message = "🚫 Produção só pode rodar migrations em PostgreSQL."
+        raise RuntimeError(message)
     if settings.ENV_MODE == "test" and not is_sqlite:
-        message_test = "🚫 Testes só podem rodar migrations em SQLite (in-memory)."
-        raise RuntimeError(message_test)
+        message = "🚫 Testes só podem rodar migrations em SQLite (in-memory)."
+        raise RuntimeError(message)
 
 
 def run_migrations_offline() -> None:
     """Migrations no modo offline (sempre Postgres)."""
     validate_env_and_db()
-    masked_url = mask_db_url(str(settings.DATABASE_URL))
     logger.info(
-        f"[Alembic] Modo: OFFLINE | ENV_MODE: {settings.ENV_MODE} | Banco: {masked_url}"
+        f"[Alembic] OFFLINE | ENV_MODE: {settings.ENV_MODE} | Banco: {mask_db_url(DATABASE_URL)}"
     )
-
     context.configure(
-        url=str(settings.DATABASE_URL),
+        url=DATABASE_URL,
         target_metadata=target_metadata,
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},
@@ -71,25 +69,22 @@ def run_migrations_offline() -> None:
 
 
 def do_run_migrations(connection: Connection) -> None:
-    """Executa migrations com uma conexão já aberta."""
     context.configure(connection=connection, target_metadata=target_metadata)
     with context.begin_transaction():
         context.run_migrations()
 
 
 async def run_migrations_online() -> None:
-    """Migrations no modo online (Postgres ou SQLite in-memory)."""
     validate_env_and_db()
-    masked_url = mask_db_url(DATABASE_URL)
     logger.info(
-        f"[Alembic] Modo: ONLINE | ENV_MODE: {settings.ENV_MODE} | Banco: {masked_url}"
+        f"[Alembic] ONLINE | ENV_MODE: {settings.ENV_MODE} | Banco: {mask_db_url(DATABASE_URL)}"
     )
-
     connectable = create_async_engine(
         DATABASE_URL, poolclass=pool.NullPool, future=True
     )
     async with connectable.connect() as connection:
         await connection.run_sync(do_run_migrations)
+    await connectable.dispose()
 
 
 if context.is_offline_mode():

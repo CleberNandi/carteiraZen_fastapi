@@ -1,8 +1,9 @@
 from typing import TYPE_CHECKING
 
-from sqlalchemy import TIMESTAMP, Boolean, String
+from mixins.mixins import Mixins
+from mixins.sync_mixins import SyncMixin
+from sqlalchemy import Boolean, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy.sql import func
 
 from app.core.database import Base
 
@@ -16,10 +17,9 @@ if TYPE_CHECKING:
     from app.models.transacao_parcela import TransacaoParcela
 
 
-class Usuario(Base):
+class Usuario(Base, Mixins, SyncMixin):
     __tablename__ = "usuarios"
 
-    id: Mapped[int] = mapped_column(primary_key=True, index=True)
     nome: Mapped[str] = mapped_column(String(100), nullable=False)
     email: Mapped[str] = mapped_column(String(100), unique=True, nullable=False)
     password_hashed: Mapped[str] = mapped_column(String(255), nullable=False)
@@ -27,12 +27,6 @@ class Usuario(Base):
     is_superuser: Mapped[bool] = mapped_column(Boolean, default=False)
     is_2fa_enabled: Mapped[bool] = mapped_column(Boolean, default=False)
     plan: Mapped[str | None] = mapped_column(String(20))
-    created_at: Mapped[TIMESTAMP] = mapped_column(
-        TIMESTAMP, server_default=func.now(), nullable=False
-    )
-    updated_at: Mapped[TIMESTAMP | None] = mapped_column(TIMESTAMP, nullable=True)
-    deleted_at: Mapped[TIMESTAMP | None] = mapped_column(TIMESTAMP, nullable=True)
-    ativo: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
 
     # Relacionamentos
     contas: Mapped[list["Conta"]] = relationship(

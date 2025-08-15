@@ -1,21 +1,26 @@
 [default]
 ENV = "dev"
+ENV_MODE = "dev"
 PROJECT_NAME = "CarteiraZen"
 VERSION = "0.1.0"
 BASE_URL = "app"
 
 [dev]
 ENV = "dev"
-DATABASE_URL = "postgresql+asyncpg://{env:POSTGRES_USER}:{env:POSTGRES_PASSWORD}@{env:POSTGRES_HOST}:{env:POSTGRES_PORT}/{env:POSTGRES_DB}"
+ENV_MODE = "dev"
+DATABASE_URL = "postgresql+asyncpg://${ZNY_POSTGRES_USER}:${ZNY_POSTGRES_PASSWORD}@${ZNY_POSTGRES_HOST}:${ZNY_POSTGRES_PORT}/${ZNY_POSTGRES_DB}"
 
 [hml]
 ENV = "hml"
-DATABASE_URL = "postgresql+asyncpg://{env:POSTGRES_USER}:{env:POSTGRES_PASSWORD}@{env:POSTGRES_HOST}:{env:POSTGRES_PORT}/{env:POSTGRES_DB}"
+ENV_MODE = "hml"
+DATABASE_URL = "postgresql+asyncpg://${ZNY_POSTGRES_USER}:${ZNY_POSTGRES_PASSWORD}@${ZNY_POSTGRES_HOST}:${ZNY_POSTGRES_PORT}/${ZNY_POSTGRES_DB}"
 
 [prod]
 ENV = "prod"
-DATABASE_URL = "postgresql+asyncpg://{env:POSTGRES_USER}:{env:POSTGRES_PASSWORD}@{env:POSTGRES_HOST}:{env:POSTGRES_PORT}/{env:POSTGRES_DB}"
+ENV_MODE = "prod"
+DATABASE_URL = "postgresql+asyncpg://${ZNY_POSTGRES_USER}:${ZNY_POSTGRES_PASSWORD}@${ZNY_POSTGRES_HOST}:${ZNY_POSTGRES_PORT}/${ZNY_POSTGRES_DB}"
 
 [test]
 ENV = "test"
-DATABASE_URL = "sqlite:///./sql_app_test.db"
+ENV_MODE = "test"
+DATABASE_URL = "sqlite+aiosqlite:///:memory:"

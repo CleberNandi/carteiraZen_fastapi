@@ -7,6 +7,3 @@ settings = Dynaconf(
     environments=True,
     env_switcher="ENV_MODE",
 )
-
-print(f"Ambiente ativo: {settings.ENV}")
-print(f"DATABASE_URL: {settings.DATABASE_URL}")
