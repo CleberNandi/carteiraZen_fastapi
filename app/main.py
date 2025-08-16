@@ -8,11 +8,11 @@ from typing import TYPE_CHECKING, cast
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from pyngrok import ngrok
+from pyngrok import ngrok  # type: ignore
 import uvicorn
 
+from app.api.v1 import endpoints
 from app.core.database import Base, engine
-import app.routers as api_v1
 
 if TYPE_CHECKING:
     from enum import Enum
@@ -46,20 +46,31 @@ app.add_middleware(
 )
 
 
-# Função para incluir todos os routers dinamicamente
-def include_all_routers(app: FastAPI, package: ModuleType) -> None:
+def include_all_routers(
+    app: FastAPI, package: ModuleType, api_version: str = "v1"
+) -> None:
+    """
+    Inclui todos os routers dinamicamente da estrutura app/api/{version}/endpoints/
+
+    Args:
+        app: FastAPI instance
+        package: Módulo dos endpoints (app.api.v1.endpoints)
+        api_version: Versão da API (default: v1)
+    """
     for _, module_name, _ in pkgutil.iter_modules(package.__path__):
         try:
             module = importlib.import_module(f"{package.__name__}.{module_name}.router")
             if hasattr(module, "router"):
-                prefix = f"/api/v1/{module_name}"
+                prefix = f"/api/{api_version}/{module_name}"
                 tags = cast("list[str | Enum]", [module_name.capitalize()])
                 app.include_router(module.router, prefix=prefix, tags=tags)
-        except ModuleNotFoundError:
+                print(f"✅ Router incluído: {prefix}")  # Log para debug
+        except ModuleNotFoundError as e:
+            print(f"⚠️  Router não encontrado: {module_name} - {e}")
             continue
 
 
-include_all_routers(app, api_v1)
+include_all_routers(app, endpoints)
 
 
 def run_ngrok(port: int = 8000) -> None:
