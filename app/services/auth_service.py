@@ -142,11 +142,11 @@ class AuthService:
             # Incrementa tentativas falhadas
             user.failed_login_attempts += 1
 
-            max_attempts = settings.get("MAX_LOGIN_ATTEMPTS", 5)
+            max_attempts = settings.get("MAX_LOGIN_ATTEMPTS", 5)  # type: ignore
             if user.failed_login_attempts >= max_attempts:
-                lockout_duration = settings.get("LOCKOUT_DURATION_MINUTES", 15)
+                lockout_duration = settings.get("LOCKOUT_DURATION_MINUTES", 15)  # type: ignore
                 user.locked_until = datetime.now(UTC) + timedelta(
-                    minutes=lockout_duration
+                    minutes=lockout_duration  # type: ignore
                 )
 
             db.add(login_attempt)
@@ -221,8 +221,7 @@ class AuthService:
             user_id=user.id,
             ip_address=ip_address,
             user_agent=user_agent,
-            expires_at=datetime.now(UTC)
-            + timedelta(days=settings.get("JWT_REFRESH_TOKEN_EXPIRE_DAYS", 30)),
+            expires_at=datetime.now(UTC) + timedelta(days=settings.get("JWT_REFRESH_TOKEN_EXPIRE_DAYS", 30)),  # type: ignore
             last_activity=datetime.now(UTC),
         )
 
@@ -232,7 +231,7 @@ class AuthService:
         return TokenResponse(
             access_token=access_token,
             refresh_token=refresh_token,
-            expires_in=settings.get("JWT_ACCESS_TOKEN_EXPIRE_MINUTES", 30) * 60,
+            expires_in=settings.get("JWT_ACCESS_TOKEN_EXPIRE_MINUTES", 30) * 60,  # type: ignore
         )
 
     @staticmethod
@@ -313,7 +312,7 @@ class AuthService:
         """Renova token de acesso usando refresh token"""
 
         # Verifica refresh token
-        payload = JWTManager.verify_token(refresh_token, "refresh")
+        payload = JWTManager.verify_token(refresh_token, "refresh")  # type: ignore
         if payload is None:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
@@ -365,7 +364,7 @@ class AuthService:
         return TokenResponse(
             access_token=access_token,
             refresh_token=refresh_token,  # Mantém o mesmo refresh token
-            expires_in=settings.get("JWT_ACCESS_TOKEN_EXPIRE_MINUTES", 30) * 60,
+            expires_in=settings.get("JWT_ACCESS_TOKEN_EXPIRE_MINUTES", 30) * 60,  # type: ignore
         )
 
     @staticmethod
@@ -557,9 +556,7 @@ class AuthService:
         await db.commit()
 
         # Enviar email (você implementa com seu serviço)
-        await EmailService.send_verification_email(
-            user.email, user.nome, user.verification_token
-        )
+        await EmailService.send_verification_email(user.email, user.nome, user.verification_token)  # type: ignore
 
         return {"message": "Novo email de verificação enviado"}
 
@@ -567,6 +564,4 @@ class AuthService:
     async def send_welcome_verification_email(user: Usuario) -> None:
         """Envia email de boas-vindas com verificação"""
 
-        await EmailService.send_verification_email(
-            email=user.email, name=user.nome, token=user.verification_token
-        )
+        await EmailService.send_verification_email(email=user.email, name=user.nome, token=user.verification_token)  # type: ignore

@@ -33,7 +33,7 @@ router = APIRouter()
 
 
 @router.post("/register", response_model=dict)
-@limiter.limit("3/minute")
+@limiter.limit("3/minute")  # type: ignore[reportUntypedFunctionDecorator]
 async def register(
     request: Request,
     user_data: UserRegister,
@@ -148,10 +148,10 @@ async def verify_email(
 
 
 @router.post("/resend-verification")
-@limiter.limit("2/minute")
+@limiter.limit("2/minute")  # type: ignore[reportUntypedFunctionDecorator]
 async def resend_verification_email(
     request: Request,
-    email_data: dict,
+    email_data: dict[str, str],
     db: AsyncSession = Depends(get_db),
 ) -> dict[str, str]:
     """Reenvia email de verificação"""
