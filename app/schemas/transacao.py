@@ -40,3 +40,11 @@ class TransacaoRead(TransacaoBase):
     updated_at: str | None
     deleted_at: str | None
     ativo: bool
+
+
+class TransacaoResponse(BaseSchema):
+    id: int
+    fatura_id: int
+    valor: int
+    descricao: str
+    data: date

@@ -1,5 +1,6 @@
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
+from datetime import UTC, datetime
 import importlib
 import os
 import pkgutil
@@ -9,10 +10,13 @@ from typing import TYPE_CHECKING, cast
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pyngrok import ngrok  # type: ignore
+from slowapi import Limiter
+from slowapi.util import get_remote_address
 import uvicorn
 
 from app.api.v1 import endpoints
 from app.core.database import Base, engine
+from app.core.middleware import SecurityMiddleware
 
 if TYPE_CHECKING:
     from enum import Enum
@@ -33,13 +37,21 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None]:
         print("🔒 Engine disposed")
 
 
+# Rate limiting global
+limiter = Limiter(key_func=get_remote_address)
+
 # FastAPI app
 app = FastAPI(title="Zenny API", version="1.0.0", lifespan=lifespan)
 
-# CORS
+# Rate limiting
+app.state.limiter = limiter
+
+
+# Middlewares
+app.add_middleware(SecurityMiddleware)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["http://localhost:3000"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -76,6 +88,16 @@ include_all_routers(app, endpoints)
 def run_ngrok(port: int = 8000) -> None:
     public_url = ngrok.connect(port, bind_tls=True).public_url  # type: ignore
     print(f"🚀 Ngrok HTTPS URL: {public_url}")
+
+
+@app.get("/")
+async def root() -> dict[str, str]:
+    return {"message": "Zenny API v1.0 - Sistema de autenticação ativo"}
+
+
+@app.get("/health")
+async def health_check() -> dict[str, str | datetime]:
+    return {"status": "healthy", "timestamp": datetime.now(UTC)}
 
 
 # Entry point

@@ -20,4 +20,5 @@ class Dynaconf:
     SMTP_PORT: str
     ENV_MODE: str
     ZNY_POSTGRES_USER: str
+    FRONTEND_URL: str
     def __init__(self, *args: object, **kwargs: object) -> None: ...

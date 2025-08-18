@@ -77,8 +77,7 @@ dev-ngrok:
 .PHONY: test coverage
 
 test:
-	ENV_MODE=test pytest -v --tb=short
-
+	ENV_MODE=test pytest
 coverage:
 	ENV_MODE=test pytest --cov=$(APP_DIR) --cov-report=term-missing --cov-report=html --cov-report=xml
 

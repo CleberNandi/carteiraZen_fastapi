@@ -13,7 +13,9 @@ class Auditoria(Base, Mixins):
     tabela: Mapped[str] = mapped_column(nullable=False)
     registro_id: Mapped[int] = mapped_column(nullable=False)
     acao: Mapped[str] = mapped_column(nullable=False)  # 'create', 'update', 'delete'
-    user_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"), nullable=True)
+    user_id: Mapped[int | None] = mapped_column(
+        ForeignKey("usuarios.id"), nullable=True
+    )
     data: Mapped[datetime] = mapped_column(server_default=func.now())
     dados_antes: Mapped[str | None] = mapped_column(
         nullable=True
