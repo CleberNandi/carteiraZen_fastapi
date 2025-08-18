@@ -9,6 +9,9 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.core.database import Base
 
 if TYPE_CHECKING:
+    from models.fatura import FaturaPagamento
+    from models.orcamento import Orcamento
+
     from app.models.auth_session import AuthSession
     from app.models.backup_code import BackupCode
     from app.models.cartao import Cartao
@@ -63,11 +66,17 @@ class Usuario(Base, Mixins, SyncMixin):
     faturas: Mapped[list["Fatura"]] = relationship(
         "Fatura", back_populates="usuario", cascade="all, delete-orphan"
     )
+    pagamentos_faturas: Mapped[list["FaturaPagamento"]] = relationship(
+        "FaturaPagamento", back_populates="usuario", cascade="all, delete-orphan"
+    )
     transacoes: Mapped[list["Transacao"]] = relationship(
         "Transacao", back_populates="usuario", cascade="all, delete-orphan"
     )
     transacoes_parcelas: Mapped[list["TransacaoParcela"]] = relationship(
         "TransacaoParcela", back_populates="usuario", cascade="all, delete-orphan"
+    )
+    orcamentos: Mapped[list["Orcamento"]] = relationship(
+        "Orcamento", back_populates="usuario", cascade="all, delete-orphan"
     )
 
     # Novos relacionamentos de auth

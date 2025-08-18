@@ -9,6 +9,7 @@ from app.core.database import Base
 
 if TYPE_CHECKING:
     from models.orcamento import Orcamento
+    from models.sub_categoria import SubCategoria
     from models.transacao import Transacao
     from models.usuario import Usuario
 
@@ -28,14 +29,17 @@ class Categoria(Base, Mixins, SyncMixin):
 
     # Relacionamentos
     categoria_pai: Mapped[Optional["Categoria"]] = relationship(
-        "Categoria", remote_side="Categoria.id", back_populates="subcategorias"
+        "Categoria",
+        remote_side="Categoria.id",
+        back_populates="subcategorias_categorias",
     )
-    subcategorias: Mapped[list["Categoria"]] = relationship(
+    subcategorias_categorias: Mapped[list["Categoria"]] = relationship(
         "Categoria", back_populates="categoria_pai"
     )
-    usuario: Mapped[Optional["Usuario"]] = relationship(
-        back_populates="categorias_personalizadas"
+    sub_categorias: Mapped[list["SubCategoria"]] = relationship(
+        "SubCategoria", back_populates="categoria"
     )
+    usuario: Mapped[Optional["Usuario"]] = relationship(back_populates="categorias")
     transacoes: Mapped[list["Transacao"]] = relationship(back_populates="categoria")
     orcamentos: Mapped[list["Orcamento"]] = relationship(back_populates="categoria")
 

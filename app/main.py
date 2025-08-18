@@ -1,5 +1,3 @@
-from collections.abc import AsyncGenerator
-from contextlib import asynccontextmanager
 from datetime import UTC, datetime
 import importlib
 import os
@@ -15,27 +13,11 @@ from slowapi.util import get_remote_address
 import uvicorn
 
 from app.api.v1 import endpoints
-from app.core.database import Base, engine
+from app.core.lifespan import lifespan
 from app.core.middleware import SecurityMiddleware
 
 if TYPE_CHECKING:
     from enum import Enum
-
-
-# Lifespan para startup/shutdown
-@asynccontextmanager
-async def lifespan(app: FastAPI) -> AsyncGenerator[None]:
-    try:
-        # Startup: criar tabelas
-        async with engine.begin() as conn:
-            await conn.run_sync(Base.metadata.create_all)
-        print("✅ Database initialized")
-        yield
-    finally:
-        # Shutdown: fechar engine
-        await engine.dispose()
-        print("🔒 Engine disposed")
-
 
 # Rate limiting global
 limiter = Limiter(key_func=get_remote_address)

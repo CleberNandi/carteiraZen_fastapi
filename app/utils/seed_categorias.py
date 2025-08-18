@@ -1,36 +1,25 @@
 from typing import Any
 
-from sqlalchemy import and_
-from sqlalchemy.orm import Session
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.models import categoria
 from seeds.categorias_seed import CATEGORIAS_SEED
 
+Categoria = categoria.Categoria
 
-def seed_categorias(db: Session) -> None:
+
+async def seed_categorias(db: AsyncSession) -> None:
     """Popula o banco com as categorias padrão"""
-    from models.categoria import Categoria
-
     print("🌱 Iniciando seed de categorias...")
 
+    # Verifica se já existem categorias
+    existing = await db.execute(select(Categoria).limit(1))
+    if existing.scalars().first():
+        print("⚠️  Categorias já existem, seed pulado")
+        return
+    cat_data: dict[str, Any]
     for cat_data in CATEGORIAS_SEED:
-        # Verifica se categoria principal já existe
-        cat_data: dict[str, Any]
-        categoria_existente = (
-            db.query(Categoria)
-            .filter(
-                and_(
-                    Categoria.nome == cat_data["nome"],
-                    Categoria.categoria_pai_id.is_(None),
-                    Categoria.usuario_id.is_(None),
-                )
-            )
-            .first()
-        )
-
-        if categoria_existente:
-            print(f"   ⚠️  Categoria '{cat_data['nome']}' já existe, pulando...")
-            continue
-
         # Cria categoria principal
         categoria_principal = Categoria(
             nome=cat_data["nome"],
@@ -40,9 +29,8 @@ def seed_categorias(db: Session) -> None:
             categoria_pai_id=None,
             usuario_id=None,  # Categoria global
         )
-
         db.add(categoria_principal)
-        db.flush()  # Para obter o ID
+        await db.flush()  # Para obter o ID
 
         print(f"   ✅ Criada categoria: {cat_data['nome']}")
 
@@ -54,11 +42,10 @@ def seed_categorias(db: Session) -> None:
                 cor=subcat_data["cor"],
                 icone=subcat_data["icone"],
                 categoria_pai_id=categoria_principal.id,
-                usuario_id=None,  # Categoria global
+                usuario_id=None,
             )
-
             db.add(subcategoria)
             print(f"      └─ ✅ Criada subcategoria: {subcat_data['nome']}")
 
-    db.commit()
+    await db.commit()
     print("🎉 Seed de categorias concluído!")
