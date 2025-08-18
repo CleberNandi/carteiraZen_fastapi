@@ -476,6 +476,10 @@ class AuthService:
         return {"message": "Senha alterada com sucesso"}
 
     @staticmethod
+    async def check_backup_code(db: AsyncSession, user_id: int, code: str) -> bool:
+        return await AuthService._verify_backup_code(db, user_id, code)
+
+    @staticmethod
     async def _verify_backup_code(
         db: AsyncSession, user_id: int, backup_code: str
     ) -> bool:
