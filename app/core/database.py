@@ -37,6 +37,6 @@ Base = declarative_base()
 
 
 # Dependency para FastAPI
-async def get_db() -> AsyncGenerator[AsyncSession]:
+async def get_async_db() -> AsyncGenerator[AsyncSession]:
     async with AsyncSessionLocal() as session:
         yield session

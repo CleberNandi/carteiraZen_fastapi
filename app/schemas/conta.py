@@ -11,7 +11,7 @@ class ContaBase(BaseSchema):
     conta_padrao: bool = False
     ativo: bool = True
     usuario_id: int
-    banco_id: int
+    banco_id: int | None = None
 
 
 class ContaCreate(ContaBase):

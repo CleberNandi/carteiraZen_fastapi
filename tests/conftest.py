@@ -7,7 +7,7 @@ import pytest_asyncio
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.pool import StaticPool
 
-from app.core.database import Base, get_db
+from app.core.database import Base, get_async_db
 
 # Imports do seu projeto baseado na estrutura mostrada
 from app.main import app
@@ -56,7 +56,7 @@ async def client(db_session: AsyncSession):
     async def override_get_db():
         yield db_session
 
-    app.dependency_overrides[get_db] = override_get_db
+    app.dependency_overrides[get_async_db] = override_get_db
 
     # Cliente assíncrono com transport
     transport = ASGITransport(app=app)

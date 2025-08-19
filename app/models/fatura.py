@@ -12,6 +12,7 @@ from app.core.database import Base
 if TYPE_CHECKING:
     from models.cartao import Cartao
     from models.transacao import Transacao
+    from models.transacao_parcela import TransacaoParcela
     from models.usuario import Usuario
 
 
@@ -45,7 +46,10 @@ class Fatura(Base, Mixins, SyncMixin):
     cartao: Mapped["Cartao"] = relationship(back_populates="faturas")
     usuario: Mapped["Usuario"] = relationship(back_populates="faturas")
     transacoes: Mapped[list["Transacao"]] = relationship(back_populates="fatura")
-    pagamentos: Mapped[list["FaturaPagamento"]] = relationship(back_populates="fatura")
+    pagamentos: Mapped[list["FaturaPagamento"]] = relationship(
+        back_populates="fatura", cascade="all, delete-orphan"
+    )
+    parcelas: Mapped[list["TransacaoParcela"]] = relationship(back_populates="fatura")
 
     @property
     def saldo_devedor(self) -> int:
@@ -145,4 +149,7 @@ class FaturaPagamento(Base, Mixins, SyncMixin):
 
     # Relacionamentos
     fatura: Mapped[Fatura] = relationship(back_populates="pagamentos")
+    parcelas: Mapped[list["TransacaoParcela"]] = relationship(
+        back_populates="fatura_pagamento", cascade="all, delete-orphan"
+    )
     usuario: Mapped["Usuario"] = relationship(back_populates="pagamentos_faturas")  # type: ignore[name-defined]
