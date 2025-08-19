@@ -22,9 +22,9 @@ async def listar_categorias(
     return await CategoriaService.listar(
         db,
         current_user,
-        incluir_subcategorias,
-        apenas_principais,
-        apenas_personalizadas,
+        incluir_subcategorias=incluir_subcategorias,
+        apenas_principais=apenas_principais,
+        apenas_personalizadas=apenas_personalizadas,
     )
 
 
@@ -63,3 +63,17 @@ async def atualizar_categoria(
     current_user: Usuario = Depends(get_current_user),
 ) -> Categoria:
     return await CategoriaService.atualizar(db, current_user, categoria_id, request)
+
+
+@router.delete("/{categoria_id}", response_model=dict)
+async def excluir_categoria(
+    categoria_id: int,
+    db: AsyncSession = Depends(get_async_db),
+    current_user: Usuario = Depends(get_current_user),
+) -> dict[str, bool]:
+    """
+    Exclui uma categoria se não houver transações vinculadas.
+    Retorna {"ok": True} se excluída com sucesso.
+    """
+    # Usa o service para verificar e deletar
+    return await CategoriaService.excluir(db, current_user, categoria_id)

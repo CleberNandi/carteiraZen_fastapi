@@ -1,5 +1,5 @@
 from fastapi import HTTPException, status
-from sqlalchemy import or_, select
+from sqlalchemy import exists, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models import categoria, transacao, usuario
@@ -141,3 +141,58 @@ class CategoriaService:
         await db.refresh(categoria)
 
         return categoria
+
+    @staticmethod
+    async def _categoria_tem_transacoes(db: AsyncSession, categoria_id: int) -> bool:
+        """Helper method para verificar se categoria tem transações vinculadas"""
+        stmt = select(exists().where(Transacao.categoria_id == categoria_id))
+        result = await db.execute(stmt)
+        count: int = result.scalar_one()
+        return count > 0
+
+    @staticmethod
+    async def _buscar_categoria(
+        db: AsyncSession, categoria_id: int, current_user: Usuario
+    ) -> Categoria:
+        """Helper method para buscar categoria"""
+        stmt = select(Categoria).where(
+            Categoria.id == categoria_id,
+            Categoria.ativo.is_(True),
+            or_(
+                Categoria.usuario_id == current_user.id,
+                Categoria.usuario_id.is_(None),
+            ),
+        )
+        result = await db.execute(stmt)
+        categoria: Categoria | None = result.scalars().first()
+
+        if not categoria:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Categoria não encontrada"
+            )
+
+        return categoria
+
+    @staticmethod
+    async def excluir(
+        db: AsyncSession, current_user: Usuario, categoria_id: int
+    ) -> dict[str, bool]:
+        # Busca a categoria usando helper
+        categoria = await CategoriaService._buscar_categoria(
+            db, categoria_id, current_user
+        )
+
+        # Verifica transações vinculadas usando helper
+        if await CategoriaService._categoria_tem_transacoes(db, categoria_id):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Não é possível excluir a categoria, existem transações vinculadas",
+            )
+
+        # Soft-delete
+        categoria.ativo = False
+        db.add(categoria)
+        await db.commit()
+        await db.refresh(categoria)
+
+        return {"ok": True}
