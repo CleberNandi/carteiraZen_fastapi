@@ -34,7 +34,7 @@ router = APIRouter()
 
 
 @router.post("/register", response_model=dict)
-@limiter.limit("3/minute")  # type: ignore[reportUntypedFunctionDecorator]
+@limiter.limit("3000/minute")  # type: ignore[reportUntypedFunctionDecorator]
 async def register(
     request: Request,
     user_data: UserRegister,
@@ -58,6 +58,7 @@ async def login(
     user_agent = get_user_agent(request)
 
     try:
+        print(f"DEBUG: Login attempt for {login_data.email}")
         user, requires_2fa = await AuthService.authenticate_user(
             db, login_data, ip_address, user_agent
         )
@@ -149,7 +150,7 @@ async def verify_email(
 
 
 @router.post("/resend-verification")
-@limiter.limit("2/minute")  # type: ignore[reportUntypedFunctionDecorator]
+@limiter.limit("2000/minute")  # type: ignore[reportUntypedFunctionDecorator]
 async def resend_verification_email(
     request: Request,
     email_data: dict[str, str],

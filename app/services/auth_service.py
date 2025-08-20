@@ -105,12 +105,9 @@ class AuthService:
         """Autentica usuário com suporte a 2FA"""
 
         # Busca usuário
-        result = await db.execute(
-            select(Usuario).where(Usuario.email == login_data.email)
-        )
-        user = result.scalar_one_or_none()
+        user = await AuthService._find_user_by_email(db, login_data.email)
 
-        # Registra tentativa
+        # Cria registro de tentativa de login
         login_attempt = LoginAttempt(
             email=login_data.email,
             ip_address=ip_address,
@@ -119,12 +116,42 @@ class AuthService:
             user_agent=user_agent,
         )
 
+        # Validações básicas
+        await AuthService._validate_user_login(db, user, login_data, login_attempt)
+
+        # Verifica 2FA se necessário
+        requires_2fa = await AuthService._handle_2fa_verification(
+            db, user, login_data, login_attempt
+        )
+        if requires_2fa:
+            return user, True
+
+        # Login bem-sucedido
+        await AuthService._finalize_successful_login(db, user, login_attempt)
+
+        return user, False
+
+    @staticmethod
+    async def _find_user_by_email(db: AsyncSession, email: str) -> Usuario:
+        """Busca usuário por email"""
+        result = await db.execute(select(Usuario).where(Usuario.email == email))
+        user = result.scalar_one_or_none()
+
         if not user:
-            db.add(login_attempt)
-            await db.commit()
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED, detail="Credenciais inválidas"
             )
+
+        return user
+
+    @staticmethod
+    async def _validate_user_login(
+        db: AsyncSession,
+        user: Usuario,
+        login_data: UserLogin2FA,
+        login_attempt: LoginAttempt,
+    ) -> None:
+        """Valida conta e credenciais do usuário"""
 
         # Verifica se conta está bloqueada
         if user.is_locked:
@@ -139,23 +166,12 @@ class AuthService:
         if not SecurityManager.verify_password(
             login_data.password, user.password_hashed
         ):
-            # Incrementa tentativas falhadas
-            user.failed_login_attempts += 1
-
-            max_attempts = settings.get("MAX_LOGIN_ATTEMPTS", 5)  # type: ignore
-            if user.failed_login_attempts >= max_attempts:
-                lockout_duration = settings.get("LOCKOUT_DURATION_MINUTES", 15)  # type: ignore
-                user.locked_until = datetime.now(UTC) + timedelta(
-                    minutes=lockout_duration  # type: ignore
-                )
-
-            db.add(login_attempt)
-            await db.commit()
+            await AuthService._handle_failed_login(db, user, login_attempt)
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED, detail="Credenciais inválidas"
             )
 
-        # 🆕 VERIFICAR SE EMAIL FOI VERIFICADO
+        # Verifica se email foi verificado
         if not user.is_verified:
             db.add(login_attempt)
             await db.commit()
@@ -164,42 +180,73 @@ class AuthService:
                 detail="Email não verificado. Verifique seu email ou solicite um novo link de verificação.",
             )
 
-        # Verifica 2FA se habilitado
-        requires_2fa = user.is_2fa_enabled
+    @staticmethod
+    async def _handle_failed_login(
+        db: AsyncSession, user: Usuario, login_attempt: LoginAttempt
+    ) -> None:
+        """Lida com tentativas de login falhadas"""
+        user.failed_login_attempts += 1
 
-        if requires_2fa:
-            totp_valid = False
-            backup_valid = False
+        max_attempts = settings.get("MAX_LOGIN_ATTEMPTS", 5)  # type: ignore
+        if user.failed_login_attempts >= max_attempts:
+            lockout_duration = settings.get("LOCKOUT_DURATION_MINUTES", 15)  # type: ignore
+            user.locked_until = datetime.now(UTC) + timedelta(minutes=lockout_duration)  # type: ignore
 
-            # Verifica código TOTP
-            if login_data.totp_code and user.totp_secret:
-                totp_valid = TOTPManager.verify_totp(
-                    user.totp_secret, login_data.totp_code
-                )
+        db.add(login_attempt)
+        await db.commit()
 
-            # Verifica código de backup
-            if login_data.backup_code and not totp_valid:
-                backup_valid = await AuthService._verify_backup_code(
-                    db, user.id, login_data.backup_code
-                )
+    @staticmethod
+    async def _handle_2fa_verification(
+        db: AsyncSession,
+        user: Usuario,
+        login_data: UserLogin2FA,
+        login_attempt: LoginAttempt,
+    ) -> bool:
+        """Verifica 2FA se habilitado. Retorna True se ainda precisa de 2FA"""
 
-            if not (totp_valid or backup_valid):
-                db.add(login_attempt)
-                await db.commit()
-                raise HTTPException(
-                    status_code=status.HTTP_401_UNAUTHORIZED,
-                    detail="Código 2FA inválido",
-                )
+        if not user.is_2fa_enabled:
+            return False
 
-        # Login bem-sucedido
+        # Se não forneceu códigos 2FA, indica que precisa
+        if not (login_data.totp_code or login_data.backup_code):
+            return True
+
+        # Verifica códigos fornecidos
+        totp_valid = False
+        backup_valid = False
+
+        # Verifica código TOTP
+        if login_data.totp_code and user.totp_secret:
+            totp_valid = TOTPManager.verify_totp(user.totp_secret, login_data.totp_code)
+
+        # Verifica código de backup
+        if login_data.backup_code and not totp_valid:
+            backup_valid = await AuthService._verify_backup_code(
+                db, user.id, login_data.backup_code
+            )
+
+        # Se forneceu código mas está inválido
+        if not (totp_valid or backup_valid):
+            db.add(login_attempt)
+            await db.commit()
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Código 2FA inválido",
+            )
+
+        return False
+
+    @staticmethod
+    async def _finalize_successful_login(
+        db: AsyncSession, user: Usuario, login_attempt: LoginAttempt
+    ) -> None:
+        """Finaliza login bem-sucedido"""
         user.reset_failed_attempts()
         user.last_login = datetime.now(UTC)
         login_attempt.success = True
 
         db.add(login_attempt)
         await db.commit()
-
-        return user, False  # 2FA já foi verificado
 
     @staticmethod
     async def create_user_session(

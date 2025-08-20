@@ -1,13 +1,13 @@
-# tests/test_transacoes.py
 from datetime import date
 
 import pytest
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.transacao import Transacao
 
 
 @pytest.mark.asyncio
-async def test_criar_transacao(db_session):
+async def test_criar_transacao(db_session: AsyncSession):
     nova = Transacao(
         tipo="entrada",
         valor_cents=1000,
