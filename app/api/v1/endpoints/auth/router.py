@@ -58,7 +58,6 @@ async def login(
     user_agent = get_user_agent(request)
 
     try:
-        print(f"DEBUG: Login attempt for {login_data.email}")
         user, requires_2fa = await AuthService.authenticate_user(
             db, login_data, ip_address, user_agent
         )

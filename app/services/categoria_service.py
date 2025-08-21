@@ -14,7 +14,7 @@ class CategoriaService:
     @staticmethod
     async def listar(
         db: AsyncSession,
-        current_user: Usuario,
+        current_user_id: int,
         *,
         incluir_subcategorias: bool = True,
         apenas_principais: bool = False,
@@ -23,11 +23,11 @@ class CategoriaService:
         stmt = select(Categoria).where(Categoria.ativo.is_(True))
 
         if apenas_personalizadas:
-            stmt = stmt.where(Categoria.usuario_id == current_user.id)
+            stmt = stmt.where(Categoria.usuario_id == current_user_id)
         else:
             stmt = stmt.where(
                 or_(
-                    Categoria.usuario_id == current_user.id,
+                    Categoria.usuario_id == current_user_id,
                     Categoria.usuario_id.is_(None),
                 )
             )
@@ -44,14 +44,14 @@ class CategoriaService:
     @staticmethod
     async def obter(
         db: AsyncSession,
-        current_user: Usuario,
+        current_user_id: int,
         categoria_id: int,
     ) -> Categoria:
         stmt = select(Categoria).where(
             Categoria.id == categoria_id,
             Categoria.ativo.is_(True),
             or_(
-                Categoria.usuario_id == current_user.id, Categoria.usuario_id.is_(None)
+                Categoria.usuario_id == current_user_id, Categoria.usuario_id.is_(None)
             ),
         )
         result = await db.execute(stmt)
@@ -67,11 +67,11 @@ class CategoriaService:
     @staticmethod
     async def listar_subcategorias(
         db: AsyncSession,
-        current_user: Usuario,
+        current_user_id: int,
         categoria_id: int,
     ) -> list[CategoriaRead]:
         # Verifica se categoria pai existe
-        categoria_pai = await CategoriaService.obter(db, current_user, categoria_id)
+        categoria_pai = await CategoriaService.obter(db, current_user_id, categoria_id)
 
         stmt = (
             select(Categoria)
@@ -79,7 +79,7 @@ class CategoriaService:
                 Categoria.categoria_pai_id == categoria_pai.id,
                 Categoria.ativo.is_(True),
                 or_(
-                    Categoria.usuario_id == current_user.id,
+                    Categoria.usuario_id == current_user_id,
                     Categoria.usuario_id.is_(None),
                 ),
             )
@@ -93,7 +93,7 @@ class CategoriaService:
     @staticmethod
     async def criar(
         db: AsyncSession,
-        current_user: Usuario,
+        current_user_id: int,
         request: CategoriaCreate,
     ) -> Categoria:
         categoria = Categoria(
@@ -102,7 +102,7 @@ class CategoriaService:
             cor=request.cor,
             icone=request.icone,
             categoria_pai_id=request.categoria_pai_id,
-            usuario_id=current_user.id,
+            usuario_id=current_user_id,
         )
         db.add(categoria)
         await db.commit()
@@ -112,11 +112,11 @@ class CategoriaService:
     @staticmethod
     async def atualizar(
         db: AsyncSession,
-        current_user: Usuario,
+        current_user_id: int,
         categoria_id: int,
         request: CategoriaCreate,
     ) -> Categoria:
-        categoria = await CategoriaService.obter(db, current_user, categoria_id)
+        categoria = await CategoriaService.obter(db, current_user_id, categoria_id)
 
         # Valida se já existem transações vinculadas
         stmt = select(Transacao).where(Transacao.categoria_id == categoria.id)
@@ -152,14 +152,14 @@ class CategoriaService:
 
     @staticmethod
     async def _buscar_categoria(
-        db: AsyncSession, categoria_id: int, current_user: Usuario
+        db: AsyncSession, categoria_id: int, current_user_id: int
     ) -> Categoria:
         """Helper method para buscar categoria"""
         stmt = select(Categoria).where(
             Categoria.id == categoria_id,
             Categoria.ativo.is_(True),
             or_(
-                Categoria.usuario_id == current_user.id,
+                Categoria.usuario_id == current_user_id,
                 Categoria.usuario_id.is_(None),
             ),
         )
@@ -175,11 +175,11 @@ class CategoriaService:
 
     @staticmethod
     async def excluir(
-        db: AsyncSession, current_user: Usuario, categoria_id: int
+        db: AsyncSession, current_user_id: int, categoria_id: int
     ) -> dict[str, bool]:
         # Busca a categoria usando helper
         categoria = await CategoriaService._buscar_categoria(
-            db, categoria_id, current_user
+            db, categoria_id, current_user_id
         )
 
         # Verifica transações vinculadas usando helper

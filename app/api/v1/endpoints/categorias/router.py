@@ -20,8 +20,8 @@ async def listar_categorias(
     current_user: Usuario = Depends(get_current_user),
 ) -> list[CategoriaRead]:
     return await CategoriaService.listar(
-        db,
-        current_user,
+        db=db,
+        current_user_id=current_user.id,
         incluir_subcategorias=incluir_subcategorias,
         apenas_principais=apenas_principais,
         apenas_personalizadas=apenas_personalizadas,
@@ -34,7 +34,9 @@ async def obter_categoria(
     db: AsyncSession = Depends(get_async_db),
     current_user: Usuario = Depends(get_current_user),
 ) -> Categoria:
-    return await CategoriaService.obter(db, current_user, categoria_id)
+    return await CategoriaService.obter(
+        db=db, current_user_id=current_user.id, categoria_id=categoria_id
+    )
 
 
 @router.get("/{categoria_id}/subcategorias", response_model=list[CategoriaRead])
@@ -43,7 +45,9 @@ async def listar_subcategorias(
     db: AsyncSession = Depends(get_async_db),
     current_user: Usuario = Depends(get_current_user),
 ) -> list[CategoriaRead]:
-    return await CategoriaService.listar_subcategorias(db, current_user, categoria_id)
+    return await CategoriaService.listar_subcategorias(
+        db=db, current_user_id=current_user.id, categoria_id=categoria_id
+    )
 
 
 @router.post("/", response_model=CategoriaRead)
@@ -52,7 +56,9 @@ async def criar_categoria_personalizada(
     db: AsyncSession = Depends(get_async_db),
     current_user: Usuario = Depends(get_current_user),
 ) -> Categoria:
-    return await CategoriaService.criar(db, current_user, request)
+    return await CategoriaService.criar(
+        db=db, current_user_id=current_user.id, request=request
+    )
 
 
 @router.put("/{categoria_id}", response_model=CategoriaRead)
@@ -62,7 +68,12 @@ async def atualizar_categoria(
     db: AsyncSession = Depends(get_async_db),
     current_user: Usuario = Depends(get_current_user),
 ) -> Categoria:
-    return await CategoriaService.atualizar(db, current_user, categoria_id, request)
+    return await CategoriaService.atualizar(
+        db=db,
+        current_user_id=current_user.id,
+        categoria_id=categoria_id,
+        request=request,
+    )
 
 
 @router.delete("/{categoria_id}", response_model=dict)
@@ -76,4 +87,6 @@ async def excluir_categoria(
     Retorna {"ok": True} se excluída com sucesso.
     """
     # Usa o service para verificar e deletar
-    return await CategoriaService.excluir(db, current_user, categoria_id)
+    return await CategoriaService.excluir(
+        db=db, current_user_id=current_user.id, categoria_id=categoria_id
+    )
