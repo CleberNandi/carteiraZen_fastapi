@@ -40,11 +40,11 @@ jobs:
           POSTGRES_PASSWORD: ${{ secrets.ZNY_POSTGRES_PASSWORD }}
           POSTGRES_DB: ${{ secrets.ZNY_POSTGRES_DB }}
         run: |
-          echo "POSTGRES_USER=${{ secrets.ZNY_POSTGRES_USER }}" > .env.ci
-          echo "POSTGRES_PASSWORD=${{ secrets.ZNY_POSTGRES_PASSWORD }}" >> .env.ci
-          echo "POSTGRES_DB=${{ secrets.ZNY_POSTGRES_DB }}" >> .env.ci
-          echo "DOCKER_USERNAME=${{ secrets.DOCKER_USERNAME }}" >> .env.ci
-          echo "DOCKER_PASSWORD=${{ secrets.DOCKER_PASSWORD }}" >> .env.ci
+          echo "POSTGRES_USER=$POSTGRES_USER" > .env.ci
+          echo "POSTGRES_PASSWORD=$POSTGRES_PASSWORD" >> .env.ci
+          echo "POSTGRES_DB=$POSTGRES_DB" >> .env.ci
+          echo "DOCKER_USERNAME=$DOCKER_USERNAME" >> .env.ci
+          echo "DOCKER_PASSWORD=$DOCKER_PASSWORD" >> .env.ci
 
       - name: Print .env.ci for debugging
         run: cat .env.ci
