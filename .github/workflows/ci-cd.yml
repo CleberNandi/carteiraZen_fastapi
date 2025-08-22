@@ -39,11 +39,13 @@ jobs:
       - name: Verify Docker & Compose
         run: docker --version && docker compose version
 
+      - name: Create temp env file
+        run: |
+          echo "ZNY_POSTGRES_USER=${{ secrets.ZNY_POSTGRES_USER }}" >> .env.ci
+          echo "ZNY_POSTGRES_PASSWORD=${{ secrets.ZNY_POSTGRES_PASSWORD }}" >> .env.ci
+          echo "ZNY_POSTGRES_DB=${{ secrets.ZNY_POSTGRES_DB }}" >> .env.ci
+
       - name: Run tests with docker compose
-        env:
-          ZNY_POSTGRES_USER: ${{ secrets.ZNY_POSTGRES_USER }}
-          ZNY_POSTGRES_PASSWORD: ${{ secrets.ZNY_POSTGRES_PASSWORD }}
-          ZNY_POSTGRES_DB: ${{ secrets.ZNY_POSTGRES_DB }}
         run: docker compose -f docker-compose.ci.yml up --build --abort-on-container-exit --exit-code-from api
   docker-build-push:
     runs-on: ubuntu-latest
