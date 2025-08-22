@@ -1,5 +1,5 @@
 services:
-  ci_db:
+  db:
     image: postgres:15-alpine
     container_name: ci_db
     restart: always
@@ -17,7 +17,7 @@ services:
       timeout: 5s
       retries: 5
 
-  ci_api:
+  api:
     build:
       context: .
       dockerfile: Dockerfile
@@ -26,9 +26,9 @@ services:
     environment:
       - PYTHONUNBUFFERED=1
       - ENV_MODE=dev
-      - DATABASE_URL=postgresql://${ZNY_POSTGRES_USER}:${ZNY_POSTGRES_PASSWORD}@ci_db:5432/${ZNY_POSTGRES_DB}
+      - DATABASE_URL=postgresql://${ZNY_POSTGRES_USER}:${ZNY_POSTGRES_PASSWORD}@db:5432/${ZNY_POSTGRES_DB}
     depends_on:
-      ci_db:
+      db:
         condition: service_healthy
     ports:
       - "8000:8000"
