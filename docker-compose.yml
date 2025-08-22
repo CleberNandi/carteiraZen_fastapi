@@ -4,15 +4,15 @@ services:
     container_name: db
     restart: always
     environment:
-      POSTGRES_USER: ${ZNY_POSTGRES_USER}
-      POSTGRES_PASSWORD: ${ZNY_POSTGRES_PASSWORD}
-      POSTGRES_DB: ${ZNY_POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
     ports:
       - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${ZNY_POSTGRES_USER} -d ${ZNY_POSTGRES_DB} || exit 1"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB} || exit 1"]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -26,7 +26,7 @@ services:
     environment:
       - PYTHONUNBUFFERED=1
       - ENV_MODE=dev
-      - DATABASE_URL=${ZNY_DATABASE_URL}
+      - DATABASE_URL=${DATABASE_URL}
     depends_on:
       db:
         condition: service_healthy

@@ -34,10 +34,10 @@ jobs:
 
       - name: Create temp env file
         env:
-          POSTGRES_USER: ${{ secrets.ZNY_POSTGRES_USER }}
-          POSTGRES_PASSWORD: ${{ secrets.ZNY_POSTGRES_PASSWORD }}
-          POSTGRES_DB: ${{ secrets.ZNY_POSTGRES_DB }}
-          DATABASE_URL: ${{ secrets.ZNY_DATABASE_URL }}
+          POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
           NGROK_AUTHTOKEN: ${{ secrets.NGROK_AUTHTOKEN }}
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
@@ -56,11 +56,11 @@ jobs:
           done
 
           # cria .env.ci
-          echo "ZNY_POSTGRES_USER=$POSTGRES_USER" > .env.ci
-          echo "ZNY_POSTGRES_PASSWORD=$POSTGRES_PASSWORD" >> .env.ci
-          echo "ZNY_POSTGRES_DB=$POSTGRES_DB" >> .env.ci
-          echo "ZNY_DATABASE_URL=$DATABASE_URL" >> .env.ci
-          echo "ZNY_SMTP_USER=$SMTP_USER" >> .env.ci
+          echo "POSTGRES_USER=$POSTGRES_USER" > .env.ci
+          echo "POSTGRES_PASSWORD=$POSTGRES_PASSWORD" >> .env.ci
+          echo "POSTGRES_DB=$POSTGRES_DB" >> .env.ci
+          echo "DATABASE_URL=$DATABASE_URL" >> .env.ci
+          echo "SMTP_USER=$SMTP_USER" >> .env.ci
           echo "SMTP_PASSWORD=$SMTP_PASSWORD" >> .env.ci
           echo "SECRET_KEY=$SECRET_KEY" >> .env.ci
           echo "NGROK_AUTHTOKEN=$NGROK_AUTHTOKEN" >> .env.ci
