@@ -41,6 +41,9 @@ jobs:
           echo "POSTGRES_PASSWORD=${{ secrets.ZNY_POSTGRES_PASSWORD }}" >> .env.ci
           echo "POSTGRES_DB=${{ secrets.ZNY_POSTGRES_DB }}" >> .env.ci
 
+      - name: Print .env.ci for debugging
+        run: cat .env.ci
+
       - name: Run tests with docker compose
         run: docker compose --env-file .env.ci -f docker-compose.ci.yml up --build --abort-on-container-exit --exit-code-from api
 
