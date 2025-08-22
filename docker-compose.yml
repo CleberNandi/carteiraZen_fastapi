@@ -12,7 +12,7 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U $$ZNY_POSTGRES_USER -d ZNY_POSTGRES_DB"]
+      test: ["CMD-SHELL", "pg_isready -U ${ZNY_POSTGRES_USER} -d ${ZNY_POSTGRES_DB} || exit 1"]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -26,7 +26,7 @@ services:
     environment:
       - PYTHONUNBUFFERED=1
       - ENV_MODE=dev
-      - DATABASE_URL=postgresql://${ZNY_POSTGRES_USER}:${ZNY_POSTGRES_PASSWORD}@db:5432/${ZNY_POSTGRES_DB}
+      - DATABASE_URL=${ZNY_DATABASE_URL}
     depends_on:
       db:
         condition: service_healthy
@@ -39,15 +39,15 @@ services:
     restart: always
 
   ngrok:
-    image: wernight/ngrok
+    image: ngrok/ngrok:latest
+    container_name: ngrok
     depends_on:
       - api
     environment:
-      NGROK_AUTHTOKEN: ${NGROK_AUTHTOKEN}
-      NGROK_REGION: us
-      NGROK_PORT: api:8000
+      NGROK_AUTHTOKEN: ${NGROK_AUTHTOKEN}  # token do ngrok
+    command: http api:8000 --region=us --log=stdout
     ports:
-      - "4040:4040"
+      - "4040:4040"  # dashboard do ngrok
 
 volumes:
   pgdata:

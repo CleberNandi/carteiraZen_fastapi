@@ -7,3 +7,5 @@ settings = Dynaconf(
     environments=True,
     env_switcher="ENV_MODE",
 )
+
+DATABASE_URL = settings.DATABASE_URL

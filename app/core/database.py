@@ -5,10 +5,7 @@ from sqlalchemy.orm import declarative_base
 
 from app.core.config import settings
 
-DATABASE_URL = (
-    f"postgresql+asyncpg://{settings.POSTGRES_USER}:{settings.POSTGRES_PASSWORD}"
-    f"@{settings.POSTGRES_HOST}:{settings.POSTGRES_PORT}/{settings.POSTGRES_DB}"
-)
+DATABASE_URL = settings.DATABASE_URL
 
 
 def mask_db_url(url: str) -> str:
