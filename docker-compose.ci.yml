@@ -17,7 +17,7 @@ services:
       timeout: 5s
       retries: 5
 
-  api:
+  ci_api:
     build:
       context: .
       dockerfile: Dockerfile
