@@ -32,7 +32,7 @@ jobs:
       - name: Verify Docker & Compose
         run: docker --version && docker compose version
 
-      - name: Create temp env file for Postgres
+      - name: Create temp env file
         env:
           POSTGRES_USER: ${{ secrets.ZNY_POSTGRES_USER }}
           POSTGRES_PASSWORD: ${{ secrets.ZNY_POSTGRES_PASSWORD }}
@@ -45,62 +45,17 @@ jobs:
           SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
           SMTP_USER: ${{ secrets.SMTP_USER }}
         run: |
-          #!/bin/bash
           set -e
 
-          # Checa se cada variável de ambiente está definida
-          if [ -z "$SMTP_USER" ]; then
-            echo "Error: SMTP_USER is not set!"
-            exit 1
-          fi
+          # checagem simples das variáveis
+          for var in SMTP_USER SMTP_PASSWORD SECRET_KEY NGROK_AUTHTOKEN POSTGRES_USER POSTGRES_PASSWORD POSTGRES_DB DOCKER_USERNAME DOCKER_PASSWORD DATABASE_URL; do
+            if [ -z "${!var}" ]; then
+              echo "Error: $var is not set!"
+              exit 1
+            fi
+          done
 
-          if [ -z "$SMTP_PASSWORD" ]; then
-            echo "Error: SMTP_PASSWORD is not set!"
-            exit 1
-          fi
-
-          if [ -z "$SECRET_KEY" ]; then
-            echo "Error: SECRET_KEY is not set!"
-            exit 1
-          fi
-
-          if [ -z "$NGROK_AUTHTOKEN" ]; then
-            echo "Error: NGROK_AUTHTOKEN is not set!"
-            exit 1
-          fi
-
-          if [ -z "$POSTGRES_USER" ]; then
-            echo "Error: POSTGRES_USER is not set!"
-            exit 1
-          fi
-
-          if [ -z "$POSTGRES_PASSWORD" ]; then
-            echo "Error: POSTGRES_PASSWORD is not set!"
-            exit 1
-          fi
-
-          if [ -z "$POSTGRES_DB" ]; then
-            echo "Error: POSTGRES_DB is not set!"
-            exit 1
-          fi
-
-          if [ -z "$DOCKER_USERNAME" ]; then
-            echo "Error: DOCKER_USERNAME is not set!"
-            exit 1
-          fi
-
-          if [ -z "$DOCKER_PASSWORD" ]; then
-            echo "Error: DOCKER_PASSWORD is not set!"
-            exit 1
-          fi
-
-          if [ -z "$DATABASE_URL" ]; then
-            echo "Error: DATABASE_URL is not set!"
-            exit 1
-          fi
-
-          # Cria o .env.ci
-          set -e
+          # cria .env.ci
           echo "ZNY_POSTGRES_USER=$POSTGRES_USER" > .env.ci
           echo "ZNY_POSTGRES_PASSWORD=$POSTGRES_PASSWORD" >> .env.ci
           echo "ZNY_POSTGRES_DB=$POSTGRES_DB" >> .env.ci
@@ -116,7 +71,7 @@ jobs:
         run: cat .env.ci
 
       - name: Run tests with docker compose
-        run: docker compose --env-file .env.ci -f docker-compose.ci.yml up --abort-on-container-exit --exit-code-from api
+        run: docker compose --env-file .env.ci -f docker-compose.ci.yml up --build --abort-on-container-exit --exit-code-from api
 
   docker-build-push:
     runs-on: ubuntu-latest
