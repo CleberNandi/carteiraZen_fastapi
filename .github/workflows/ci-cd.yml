@@ -37,7 +37,7 @@ jobs:
 
       - name: Create temp env file for Postgres
         run: |
-          echo "POSTGRES_USER=${{ secrets.ZNY_POSTGRES_USER }}" >> .env.ci
+          echo "POSTGRES_USER=${{ secrets.ZNY_POSTGRES_USER }}" > .env.ci
           echo "POSTGRES_PASSWORD=${{ secrets.ZNY_POSTGRES_PASSWORD }}" >> .env.ci
           echo "POSTGRES_DB=${{ secrets.ZNY_POSTGRES_DB }}" >> .env.ci
 
