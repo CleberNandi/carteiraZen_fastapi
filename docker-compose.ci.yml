@@ -28,7 +28,7 @@ services:
       - ENV_MODE=dev
       - DATABASE_URL=postgresql://${ZNY_POSTGRES_USER}:${ZNY_POSTGRES_PASSWORD}@ci_db:5432/${ZNY_POSTGRES_DB}
     depends_on:
-      db:
+      ci_db:
         condition: service_healthy
     ports:
       - "8000:8000"
