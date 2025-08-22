@@ -12,7 +12,7 @@ on:
       - "dev"
       - "hml"
       - "main"
-  workflow_dispatch: # permite executar manualmente no GitHub
+  workflow_dispatch: # permite executar manualmente no GitHub.
 
 jobs:
   build-test:
