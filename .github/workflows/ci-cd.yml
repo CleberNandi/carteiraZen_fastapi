@@ -116,7 +116,7 @@ jobs:
         run: cat .env.ci
 
       - name: Run tests with docker compose
-        run: docker compose --env-file .env.ci -f docker-compose.ci.yml up --build --abort-on-container-exit --exit-code-from api
+        run: docker compose --env-file .env.ci -f docker-compose.ci.yml up --abort-on-container-exit --exit-code-from api
 
   docker-build-push:
     runs-on: ubuntu-latest
