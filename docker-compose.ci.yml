@@ -6,7 +6,6 @@ services:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
-    command: ["sh", "-c", "echo $POSTGRES_USER && echo $POSTGRES_PASSWORD && echo $POSTGRES_DB && sleep 10"]
 
     ports:
       - "5432:5432"
