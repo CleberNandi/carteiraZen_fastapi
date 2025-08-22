@@ -28,6 +28,9 @@ RATE_LIMIT_REGISTER = "3/minute"
 
 # email
 FRONTEND_URL = "http://localhost:8000/api/v1/auth"
+MAIL_FROM = "contato@nandidigitalworks.com.br"
+MAIL_FROM_NAME = "Nandi Digital Works"
+
 
 [dev]
 ENV = "dev"
