@@ -101,16 +101,16 @@ jobs:
 
           # Cria o .env.ci
           set -e
-          echo "ZNY_POSTGRES_USER=$secrets.POSTGRES_USER" > .env.ci
-          echo "ZNY_POSTGRES_PASSWORD=$secrets.POSTGRES_PASSWORD" >> .env.ci
-          echo "ZNY_POSTGRES_DB=$secrets.POSTGRES_DB" >> .env.ci
-          echo "ZNY_DATABASE_URL=$secrets.DATABASE_URL" >> .env.ci
-          echo "SMTP_USER=$secrets.SMTP_USER" >> .env.ci
-          echo "SMTP_PASSWORD=$secrets.SMTP_PASSWORD" >> .env.ci
-          echo "SECRET_KEY=$secrets.SECRET_KEY" >> .env.ci
-          echo "NGROK_AUTHTOKEN=$secrets.NGROK_AUTHTOKEN" >> .env.ci
-          echo "DOCKER_USERNAME=$secrets.DOCKER_USERNAME" >> .env.ci
-          echo "DOCKER_PASSWORD=$secrets.DOCKER_PASSWORD" >> .env.ci
+          echo "ZNY_POSTGRES_USER=$POSTGRES_USER" > .env.ci
+          echo "ZNY_POSTGRES_PASSWORD=$POSTGRES_PASSWORD" >> .env.ci
+          echo "ZNY_POSTGRES_DB=$POSTGRES_DB" >> .env.ci
+          echo "ZNY_DATABASE_URL=$DATABASE_URL" >> .env.ci
+          echo "SMTP_USER=$SMTP_USER" >> .env.ci
+          echo "SMTP_PASSWORD=$SMTP_PASSWORD" >> .env.ci
+          echo "SECRET_KEY=$SECRET_KEY" >> .env.ci
+          echo "NGROK_AUTHTOKEN=$NGROK_AUTHTOKEN" >> .env.ci
+          echo "DOCKER_USERNAME=$DOCKER_USERNAME" >> .env.ci
+          echo "DOCKER_PASSWORD=$DOCKER_PASSWORD" >> .env.ci
 
       - name: Print .env.ci for debugging
         run: cat .env.ci
