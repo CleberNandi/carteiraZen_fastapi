@@ -17,9 +17,6 @@ on:
 jobs:
   build-test:
     runs-on: ubuntu-latest
-    env:
-      DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-      DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -36,10 +33,18 @@ jobs:
         run: docker --version && docker compose version
 
       - name: Create temp env file for Postgres
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+          POSTGRES_USER: ${{ secrets.ZNY_POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ secrets.ZNY_POSTGRES_PASSWORD }}
+          POSTGRES_DB: ${{ secrets.ZNY_POSTGRES_DB }}
         run: |
           echo "POSTGRES_USER=${{ secrets.ZNY_POSTGRES_USER }}" > .env.ci
           echo "POSTGRES_PASSWORD=${{ secrets.ZNY_POSTGRES_PASSWORD }}" >> .env.ci
           echo "POSTGRES_DB=${{ secrets.ZNY_POSTGRES_DB }}" >> .env.ci
+          echo "DOCKER_USERNAME=${{ secrets.DOCKER_USERNAME }}" >> .env.ci
+          echo "DOCKER_PASSWORD=${{ secrets.DOCKER_PASSWORD }}" >> .env.ci
 
       - name: Print .env.ci for debugging
         run: cat .env.ci
