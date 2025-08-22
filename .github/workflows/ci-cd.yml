@@ -21,17 +21,31 @@ jobs:
           #! /bin/bash
           set -e
 
-          # Lista de variáveis obrigatórias
-          REQUIRED_VARS=("ZNY_POSTGRES_USER" "ZNY_POSTGRES_PASSWORD" "ZNY_POSTGRES_DB" "DOCKER_USERNAME" "DOCKER_PASSWORD")
+          # Checa cada secret individualmente
+          if [ -z "${{ secrets.ZNY_POSTGRES_USER }}" ]; then
+            echo "Error: ZNY_POSTGRES_USER secret is not set!"
+            exit 1
+          fi
 
-          # Checa se cada variável está definida
-          for VAR_NAME in "${REQUIRED_VARS[@]}"; do
-            VALUE="${{ secrets[$VAR_NAME] }}"
-            if [ -z "$VALUE" ]; then
-              echo "Error: secret $VAR_NAME is not set!"
-              exit 1
-            fi
-          done
+          if [ -z "${{ secrets.ZNY_POSTGRES_PASSWORD }}" ]; then
+            echo "Error: ZNY_POSTGRES_PASSWORD secret is not set!"
+            exit 1
+          fi
+
+          if [ -z "${{ secrets.ZNY_POSTGRES_DB }}" ]; then
+            echo "Error: ZNY_POSTGRES_DB secret is not set!"
+            exit 1
+          fi
+
+          if [ -z "${{ secrets.DOCKER_USERNAME }}" ]; then
+            echo "Error: DOCKER_USERNAME secret is not set!"
+            exit 1
+          fi
+
+          if [ -z "${{ secrets.DOCKER_PASSWORD }}" ]; then
+            echo "Error: DOCKER_PASSWORD secret is not set!"
+            exit 1
+          fi
 
           # Cria o .env.ci
           echo "POSTGRES_USER=${{ secrets.ZNY_POSTGRES_USER }}" > .env.ci
