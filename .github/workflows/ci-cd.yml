@@ -40,7 +40,11 @@ jobs:
         run: docker --version && docker compose version
 
       - name: Run tests with docker compose
-        run: docker compose -f docker-compose.ci.yml up --build --abort-on-container-exit --exit-code-from api
+        run: |
+          export ZNY_POSTGRES_USER=${{ secrets.ZNY_POSTGRES_USER }}
+          export ZNY_POSTGRES_PASSWORD=${{ secrets.ZNY_POSTGRES_PASSWORD }}
+          export ZNY_POSTGRES_DB=${{ secrets.ZNY_POSTGRES_DB }}
+          docker compose -f docker-compose.ci.yml up --build --abort-on-container-exit --exit-code-from api
 
   docker-build-push:
     runs-on: ubuntu-latest
