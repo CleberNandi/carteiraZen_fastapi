@@ -34,9 +34,9 @@ jobs:
 
       - name: Create temp env file for Postgres
         env:
-          ZNY_POSTGRES_USER: ${{ secrets.ZNY_POSTGRES_USER }}
-          ZNY_POSTGRES_PASSWORD: ${{ secrets.ZNY_POSTGRES_PASSWORD }}
-          ZNY_POSTGRES_DB: ${{ secrets.ZNY_POSTGRES_DB }}
+          POSTGRES_USER: ${{ secrets.ZNY_POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ secrets.ZNY_POSTGRES_PASSWORD }}
+          POSTGRES_DB: ${{ secrets.ZNY_POSTGRES_DB }}
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
         run: |
@@ -70,9 +70,9 @@ jobs:
           fi
 
           # Cria o .env.ci
-          echo "POSTGRES_USER=$POSTGRES_USER" > .env.ci
-          echo "POSTGRES_PASSWORD=$POSTGRES_PASSWORD" >> .env.ci
-          echo "POSTGRES_DB=$POSTGRES_DB" >> .env.ci
+          echo "POSTGRES_USER=$ZNY_POSTGRES_USER" > .env.ci
+          echo "POSTGRES_PASSWORD=$ZNY_POSTGRES_PASSWORD" >> .env.ci
+          echo "POSTGRES_DB=$ZNY_POSTGRES_DB" >> .env.ci
           echo "DOCKER_USERNAME=$DOCKER_USERNAME" >> .env.ci
           echo "DOCKER_PASSWORD=$DOCKER_PASSWORD" >> .env.ci
 
