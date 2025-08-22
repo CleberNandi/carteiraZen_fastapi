@@ -26,6 +26,9 @@ services:
     environment:
       - PYTHONUNBUFFERED=1
       - ENV_MODE=dev
+      - SMTP_USER=${SMTP_USER}
+      - SMTP_PASSWORD=${SMTP_PASSWORD}
+      - SECRET_KEY=${SECRET_KEY}
       - DATABASE_URL=${ZNY_DATABASE_URL}
     depends_on:
       db:
