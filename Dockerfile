@@ -4,7 +4,7 @@ FROM clebernandi/fastapi-base:latest AS builder
 WORKDIR /app
 
 # Apenas os arquivos de dependências para aproveitar cache
-COPY pyproject.toml settings.toml .secrets.toml README.md ./
+COPY pyproject.toml settings.toml README.md ./
 
 # Copia o código fonte
 COPY app ./app
