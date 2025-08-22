@@ -1,5 +1,5 @@
 services:
-  db:
+  ci_db:
     image: postgres:15-alpine
     container_name: ci_db
     restart: always
