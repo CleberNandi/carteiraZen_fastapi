@@ -26,7 +26,7 @@ services:
     environment:
       - PYTHONUNBUFFERED=1
       - ENV_MODE=dev
-      - DATABASE_URL=postgresql://${ZNY_POSTGRES_USER}:${ZNY_POSTGRES_PASSWORD}@db:5432/${ZNY_POSTGRES_DB}
+      - DATABASE_URL=postgresql://${ZNY_POSTGRES_USER}:${ZNY_POSTGRES_PASSWORD}@ci_db:5432/${ZNY_POSTGRES_DB}
     depends_on:
       db:
         condition: service_healthy
