@@ -60,7 +60,7 @@ jobs:
           echo "ZNY_POSTGRES_PASSWORD=$POSTGRES_PASSWORD" >> .env.ci
           echo "ZNY_POSTGRES_DB=$POSTGRES_DB" >> .env.ci
           echo "ZNY_DATABASE_URL=$DATABASE_URL" >> .env.ci
-          echo "SMTP_USER=$SMTP_USER" >> .env.ci
+          echo "ZNY_SMTP_USER=$SMTP_USER" >> .env.ci
           echo "SMTP_PASSWORD=$SMTP_PASSWORD" >> .env.ci
           echo "SECRET_KEY=$SECRET_KEY" >> .env.ci
           echo "NGROK_AUTHTOKEN=$NGROK_AUTHTOKEN" >> .env.ci
