@@ -17,17 +17,23 @@ on:
 jobs:
   build-test:
     runs-on: ubuntu-latest
+    env:
+      POSTGRES_USER: ${{ secrets.ZNY_POSTGRES_USER }}
+      POSTGRES_PASSWORD: ${{ secrets.ZNY_POSTGRES_PASSWORD }}
+      POSTGRES_DB: ${{ secrets.ZNY_POSTGRES_DB }}
+      DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+      DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
     services:
       postgres:
         image: postgres:15-alpine
         env:
-          POSTGRES_USER: ${{ secrets.ZNY_POSTGRES_USER }}
-          POSTGRES_PASSWORD: ${{ secrets.ZNY_POSTGRES_PASSWORD }}
-          POSTGRES_DB: ${{ secrets.ZNY_POSTGRES_DB }}
+          POSTGRES_USER: $POSTGRES_USER
+          POSTGRES_PASSWORD: $POSTGRES_PASSWORD
+          POSTGRES_DB: $POSTGRES_DB
         ports:
           - 5432:5432
         options: >-
-          --health-cmd="pg_isready -U ${{ secrets.ZNY_POSTGRES_USER }} -d ${{ secrets.ZNY_POSTGRES_DB }}"
+          --health-cmd="pg_isready -U $POSTGRES_USER -d $POSTGRES_DB"
           --health-interval=5s
           --health-timeout=5s
           --health-retries=5
@@ -57,8 +63,8 @@ jobs:
       - name: Log in to Docker Hub
         uses: docker/login-action@v2
         with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
+          username: $DOCKER_USERNAME
+          password: $DOCKER_PASSWORD
 
       - name: Set Docker image tag
         id: tag
