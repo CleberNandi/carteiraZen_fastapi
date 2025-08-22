@@ -101,10 +101,10 @@ jobs:
 
           # Cria o .env.ci
           set -e
-          echo "ZNY_POSTGRES_USER=$secrets.ZNY_POSTGRES_USER" > .env.ci
-          echo "ZNY_POSTGRES_PASSWORD=$secrets.ZNY_POSTGRES_PASSWORD" >> .env.ci
-          echo "ZNY_POSTGRES_DB=$secrets.ZNY_POSTGRES_DB" >> .env.ci
-          echo "ZNY_DATABASE_URL=$secrets.ZNY_DATABASE_URL" >> .env.ci
+          echo "ZNY_POSTGRES_USER=$secrets.POSTGRES_USER" > .env.ci
+          echo "ZNY_POSTGRES_PASSWORD=$secrets.POSTGRES_PASSWORD" >> .env.ci
+          echo "ZNY_POSTGRES_DB=$secrets.POSTGRES_DB" >> .env.ci
+          echo "ZNY_DATABASE_URL=$secrets.DATABASE_URL" >> .env.ci
           echo "SMTP_USER=$secrets.SMTP_USER" >> .env.ci
           echo "SMTP_PASSWORD=$secrets.SMTP_PASSWORD" >> .env.ci
           echo "SECRET_KEY=$secrets.SECRET_KEY" >> .env.ci
