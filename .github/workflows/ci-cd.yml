@@ -38,13 +38,37 @@ jobs:
           POSTGRES_PASSWORD: ${{ secrets.ZNY_POSTGRES_PASSWORD }}
           POSTGRES_DB: ${{ secrets.ZNY_POSTGRES_DB }}
           DATABASE_URL: ${{ secrets.ZNY_DATABASE_URL }}
+          NGROK_AUTHTOKEN: ${{ secrets.NGROK_AUTHTOKEN }}
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+          SECRET_KEY: ${{ secrets.SECRET_KEY }}
+          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+          SMTP_USER: ${{ secrets.SMTP_USER }}
         run: |
           #!/bin/bash
           set -e
 
           # Checa se cada variável de ambiente está definida
+          if [ -z "$SMTP_USER" ]; then
+            echo "Error: SMTP_USER is not set!"
+            exit 1
+          fi
+
+          if [ -z "$SMTP_PASSWORD" ]; then
+            echo "Error: SMTP_PASSWORD is not set!"
+            exit 1
+          fi
+
+          if [ -z "$SECRET_KEY" ]; then
+            echo "Error: SECRET_KEY is not set!"
+            exit 1
+          fi
+
+          if [ -z "$NGROK_AUTHTOKEN" ]; then
+            echo "Error: NGROK_AUTHTOKEN is not set!"
+            exit 1
+          fi
+
           if [ -z "$POSTGRES_USER" ]; then
             echo "Error: POSTGRES_USER is not set!"
             exit 1
@@ -76,12 +100,17 @@ jobs:
           fi
 
           # Cria o .env.ci
-          echo "ZNY_POSTGRES_USER=$POSTGRES_USER" > .env.ci
-          echo "ZNY_POSTGRES_PASSWORD=$POSTGRES_PASSWORD" >> .env.ci
-          echo "ZNY_POSTGRES_DB=$POSTGRES_DB" >> .env.ci
-          echo "ZNY_DATABASE_URL=$DATABASE_URL" >> .env.ci
-          echo "DOCKER_USERNAME=$DOCKER_USERNAME" >> .env.ci
-          echo "DOCKER_PASSWORD=$DOCKER_PASSWORD" >> .env.ci
+          set -e
+          echo "ZNY_POSTGRES_USER=$secrets.ZNY_POSTGRES_USER" > .env.ci
+          echo "ZNY_POSTGRES_PASSWORD=$secrets.ZNY_POSTGRES_PASSWORD" >> .env.ci
+          echo "ZNY_POSTGRES_DB=$secrets.ZNY_POSTGRES_DB" >> .env.ci
+          echo "ZNY_DATABASE_URL=$secrets.ZNY_DATABASE_URL" >> .env.ci
+          echo "SMTP_USER=$secrets.SMTP_USER" >> .env.ci
+          echo "SMTP_PASSWORD=$secrets.SMTP_PASSWORD" >> .env.ci
+          echo "SECRET_KEY=$secrets.SECRET_KEY" >> .env.ci
+          echo "NGROK_AUTHTOKEN=$secrets.NGROK_AUTHTOKEN" >> .env.ci
+          echo "DOCKER_USERNAME=$secrets.DOCKER_USERNAME" >> .env.ci
+          echo "DOCKER_PASSWORD=$secrets.DOCKER_PASSWORD" >> .env.ci
 
       - name: Print .env.ci for debugging
         run: cat .env.ci
