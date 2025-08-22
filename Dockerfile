@@ -19,10 +19,18 @@ FROM python:3.13-slim AS final
 WORKDIR /app
 
 # Libs necessárias em tempo de execução
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    libglib2.0-0 libsm6 libxrender1 libgl1 libgl1-mesa-glx ffmpeg libgtk-3-0 libv4l-dev libjpeg-dev \
-    libavcodec-dev libavformat-dev libswscale-dev libatlas-base-dev libpng-dev openssl bash curl && \
-    rm -rf /var/lib/apt/lists/*
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+    build-essential \
+    libpq-dev \
+    libjpeg-dev \
+    zlib1g-dev \
+    libpng-dev \
+    libfreetype6-dev \
+    libffi-dev \
+    libssl-dev \
+    curl \
+    bash \
+    && rm -rf /var/lib/apt/lists/*
 
 # Copia apenas os arquivos necessários do builder
 COPY --from=builder /usr/local/lib/python3.13/site-packages /usr/local/lib/python3.13/site-packages
