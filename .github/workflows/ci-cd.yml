@@ -34,9 +34,9 @@ jobs:
 
       - name: Create temp env file for Postgres
         env:
-          POSTGRES_USER: ${{ secrets.ZNY_POSTGRES_USER }}
-          POSTGRES_PASSWORD: ${{ secrets.ZNY_POSTGRES_PASSWORD }}
-          POSTGRES_DB: ${{ secrets.ZNY_POSTGRES_DB }}
+          ZNY_POSTGRES_USER: ${{ secrets.ZNY_POSTGRES_USER }}
+          ZNY_POSTGRES_PASSWORD: ${{ secrets.ZNY_POSTGRES_PASSWORD }}
+          ZNY_POSTGRES_DB: ${{ secrets.ZNY_POSTGRES_DB }}
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
         run: |
