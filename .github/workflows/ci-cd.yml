@@ -92,7 +92,6 @@ jobs:
           done
 
       - name: Show Ngrok URL
-        if: ${{ secrets.NGROK_AUTHTOKEN != '' }}
         env:
           NGROK_AUTHTOKEN: ${{ secrets.NGROK_AUTHTOKEN }}
         run: |
