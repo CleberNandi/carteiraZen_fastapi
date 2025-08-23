@@ -130,6 +130,39 @@ jobs:
             exit 1
           fi
 
+      - name: Run Alembic migrations (CI)
+        run: |
+          set -e
+          echo "🔹 Rodando migrations Alembic na base de CI..."
+
+          # Debug: Verificar estado do container antes de executar Alembic
+          echo "🔍 Debugando ambiente do container..."
+          docker compose --env-file .env.ci -f docker-compose.ci.yml run --rm api python -c "
+          import sys, os
+          print('🐍 Python:', sys.version)
+          print('📁 CWD:', os.getcwd())
+          print('🛤️  Python Path:', sys.path[:3], '...')
+          print('📂 Conteúdo:', [f for f in os.listdir('.') if not f.startswith('.')][:10])
+          if os.path.exists('.venv'): print('✅ .venv existe')
+          else: print('❌ .venv não existe')
+          try:
+              import dynaconf
+              print('✅ dynaconf importado com sucesso')
+          except ImportError as e:
+              print(f'❌ dynaconf: {e}')
+          "
+
+          # Verificar se o container tem ambiente virtual
+          VENV_EXISTS=$(docker compose --env-file .env.ci -f docker-compose.ci.yml run --rm api bash -c "if [ -d .venv ]; then echo 'true'; else echo 'false'; fi")
+
+          if [ "$VENV_EXISTS" = "true" ]; then
+            echo "📦 Usando ambiente virtual (.venv) para Alembic..."
+            docker compose --env-file .env.ci -f docker-compose.ci.yml run --rm api .venv/bin/alembic upgrade head
+          else
+            echo "📦 Usando uv run para Alembic..."
+            docker compose --env-file .env.ci -f docker-compose.ci.yml run --rm api uv run alembic upgrade head
+          fi
+
       - name: Build API container
         run: |
           set -e
@@ -291,6 +324,20 @@ jobs:
           BRANCH=${GITHUB_REF#refs/heads/}
           echo "BRANCH_NAME=$BRANCH" >> $GITHUB_ENV
           echo "🌿 Branch: $BRANCH"
+
+      - name: Run Alembic migrations (Prod/Staging)
+        if: github.ref == 'refs/heads/main'
+        env:
+          DATABASE_URL: ${{ secrets.PROD_DATABASE_URL }}
+          ENV_MODE: prod
+        run: |
+          set -e
+          echo "🔹 Rodando migrations Alembic no banco PROD/STAGING..."
+          python -m venv .venv
+          source .venv/bin/activate
+          pip install --upgrade pip setuptools wheel
+          pip install -r requirements.txt
+          alembic upgrade head
 
       - name: Generate Docker tags
         id: meta

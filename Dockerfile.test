@@ -26,6 +26,9 @@ FROM python:3.13-slim AS test
 
 WORKDIR /app
 
+# CONFIGURA O PYTHONPATH CORRETAMENTE
+ENV PYTHONPATH=/app
+
 # Instala libs do sistema necessárias
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
     build-essential libpq-dev libjpeg-dev zlib1g-dev libpng-dev \
@@ -38,6 +41,25 @@ RUN pip install --upgrade pip && pip install uv
 # Copia o projeto completo do builder (incluindo .venv e todos os diretórios)
 COPY --from=builder /app /app
 
+# CERTIFICA QUE AS DEPENDÊNCIAS ESTÃO INSTALADAS CORRETAMENTE
+RUN echo "🔍 Verificando estado do ambiente virtual..." && \
+    if [ -d .venv ]; then \
+    echo "✅ .venv encontrado, verificando dependências..."; \
+    .venv/bin/python -c "import dynaconf; print('✅ dynaconf OK')" || \
+    (echo "❌ dynaconf não encontrado, reinstalando dependências..." && uv sync --dev); \
+    else \
+    echo "❌ .venv não encontrado, criando ambiente..."; \
+    uv sync --dev; \
+    fi
+
+# Verifica se todas as dependências críticas estão instaladas
+RUN echo "🧪 Testando imports críticos..." && \
+    if [ -d .venv ]; then \
+    .venv/bin/python -c "import dynaconf, alembic, pytest; print('✅ Todas as dependências OK')"; \
+    else \
+    uv run python -c "import dynaconf, alembic, pytest; print('✅ Todas as dependências OK')"; \
+    fi
+
 # wait-for-it para garantir que o DB esteja pronto
 ADD https://raw.githubusercontent.com/vishnubob/wait-for-it/master/wait-for-it.sh /wait-for-it.sh
 RUN chmod +x /wait-for-it.sh
@@ -45,5 +67,9 @@ RUN chmod +x /wait-for-it.sh
 # Expõe porta caso necessário
 EXPOSE 8000
 
-# Comando default para rodar os testes usando uv
-CMD ["/wait-for-it.sh", "db:5432", "--timeout=60", "--strict", "--", "uv", "run", "pytest", "--maxfail=1", "--disable-warnings", "-v"]
+# COMANDO CORRIGIDO - usa o ambiente virtual se existir
+CMD if [ -d .venv ]; then \
+    /wait-for-it.sh db:5432 --timeout=60 --strict -- .venv/bin/python -m pytest --maxfail=1 --disable-warnings -v; \
+    else \
+    /wait-for-it.sh db:5432 --timeout=60 --strict -- uv run pytest --maxfail=1 --disable-warnings -v; \
+    fi
