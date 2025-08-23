@@ -41,6 +41,9 @@ RUN pip install --upgrade pip setuptools wheel alembic
 # Copia o projeto completo do builder (incluindo .venv e todos os diretórios)
 COPY --from=builder /app /app
 
+# Instala todas as dependências do projeto (prod + dev)
+RUN pip install --upgrade pip && uv sync --dev
+
 # wait-for-it para garantir que o DB esteja pronto
 ADD https://raw.githubusercontent.com/vishnubob/wait-for-it/master/wait-for-it.sh /wait-for-it.sh
 RUN chmod +x /wait-for-it.sh
