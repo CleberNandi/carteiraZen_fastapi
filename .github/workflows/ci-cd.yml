@@ -240,7 +240,7 @@ jobs:
 
             **Commit**: ${{ github.sha }}
             **Author**: @${{ github.actor }}
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          github_token: ${{ secrets.PAT }}
       - name: PR Success Summary
         if: steps.check-pr.outputs.exists == 'false'
         run: |
