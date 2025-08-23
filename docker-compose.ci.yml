@@ -20,23 +20,16 @@ services:
   api:
     build:
       context: .
-      dockerfile: Dockerfile
-      target: final
+      dockerfile: Dockerfile.test
+      target: test
     container_name: ci_api
     environment:
       - PYTHONUNBUFFERED=1
-      - ENV_MODE=dev
-      - SMTP_USER=${SMTP_USER}
-      - SMTP_PASSWORD=${SMTP_PASSWORD}
-      - SECRET_KEY=${SECRET_KEY}
-      - DATABASE_URL=${DATABASE_URL}
     depends_on:
       db:
         condition: service_healthy
     ports:
       - "8000:8000"
-    volumes:
-      - ./:/app
     env_file:
       - .env.ci
 

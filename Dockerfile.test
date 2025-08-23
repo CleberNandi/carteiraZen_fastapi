@@ -1,0 +1,43 @@
+# Etapa de build + instalação de dependências com uv (prod + dev)
+FROM clebernandi/fastapi-base:latest AS builder
+
+WORKDIR /app
+
+# Atualiza pip, instala uv
+RUN pip install --upgrade pip setuptools wheel && \
+    pip install uv
+
+# Copia arquivos de dependências e README
+COPY pyproject.toml settings.toml README.md ./
+
+# Copia o código fonte
+COPY app ./app
+
+# Instala todas as dependências (prod + dev)
+RUN uv sync --dev
+
+# Container final para testes
+FROM python:3.13-slim AS test
+
+WORKDIR /app
+
+# Instala libs do sistema necessárias
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+    build-essential libpq-dev libjpeg-dev zlib1g-dev libpng-dev \
+    libfreetype6-dev libffi-dev libssl-dev curl bash \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copia pacotes e código do builder
+COPY --from=builder /usr/local/lib/python3.13/site-packages /usr/local/lib/python3.13/site-packages
+COPY --from=builder /usr/local/bin /usr/local/bin
+COPY --from=builder /app /app
+
+# wait-for-it para garantir que o DB esteja pronto
+ADD https://raw.githubusercontent.com/vishnubob/wait-for-it/master/wait-for-it.sh /wait-for-it.sh
+RUN chmod +x /wait-for-it.sh
+
+# Expõe porta caso necessário
+EXPOSE 8000
+
+# Comando default para rodar os testes
+CMD ["/wait-for-it.sh", "db:5432", "--timeout=60", "--strict", "--", "uv", "pytest", "--maxfail=1", "--disable-warnings", "-q"]

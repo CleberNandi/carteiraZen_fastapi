@@ -26,7 +26,6 @@ services:
     environment:
       - PYTHONUNBUFFERED=1
       - ENV_MODE=dev
-      - DATABASE_URL=${DATABASE_URL}
     depends_on:
       db:
         condition: service_healthy
