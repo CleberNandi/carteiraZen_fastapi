@@ -18,9 +18,7 @@ logger = logging.getLogger("alembic.env")
 
 # DATABASE_URL já expandido pelo Dynaconf
 # Montar DATABASE_URL dinamicamente
-DATABASE_URL = (
-    f"postgresql+asyncpg://{settings.POSTGRES_USER}:{settings.POSTGRES_PASSWORD}@db:5432/{settings.POSTGRES_DB}"
-)
+DATABASE_URL = f"postgresql+asyncpg://{settings.POSTGRES_USER}:{settings.POSTGRES_PASSWORD}@{settings.POSTGRES_HOST}:5432/{settings.POSTGRES_DB}"
 
 if settings.ENV_MODE == "test":
     DATABASE_URL = "sqlite+aiosqlite:///:memory:"

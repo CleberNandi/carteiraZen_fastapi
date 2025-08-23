@@ -130,6 +130,12 @@ jobs:
             exit 1
           fi
 
+      - name: Run Alembic migrations (CI)
+        run: |
+          set -e
+          echo "🔹 Rodando migrations Alembic na base de CI..."
+          docker compose --env-file .env.ci -f docker-compose.ci.yml run --rm api alembic upgrade head
+
       - name: Build API container
         run: |
           set -e
@@ -291,6 +297,20 @@ jobs:
           BRANCH=${GITHUB_REF#refs/heads/}
           echo "BRANCH_NAME=$BRANCH" >> $GITHUB_ENV
           echo "🌿 Branch: $BRANCH"
+
+      - name: Run Alembic migrations (Prod/Staging)
+        if: github.ref == 'refs/heads/main'
+        env:
+          DATABASE_URL: ${{ secrets.PROD_DATABASE_URL }}
+          ENV_MODE: prod
+        run: |
+          set -e
+          echo "🔹 Rodando migrations Alembic no banco PROD/STAGING..."
+          python -m venv .venv
+          source .venv/bin/activate
+          pip install --upgrade pip setuptools wheel
+          pip install -r requirements.txt
+          alembic upgrade head
 
       - name: Generate Docker tags
         id: meta
