@@ -96,11 +96,34 @@ jobs:
           set -e
           docker compose --env-file .env.ci -f docker-compose.ci.yml build api
 
-      - name: Run tests
+      - name: Debug - Check project structure
+        run: |
+          echo "=== Estrutura do projeto ==="
+          ls -la
+          echo "=== Conteúdo do app/ ==="
+          ls -la app/ || echo "Diretório app/ não encontrado"
+          echo "=== Procurando arquivos de teste ==="
+          find . -name "*test*.py" -o -name "test_*.py" || echo "Nenhum arquivo de teste encontrado"
+
+      - name: Debug - Check container structure
+        run: |
+          echo "=== Estrutura dentro do container ==="
+          docker compose --env-file .env.ci -f docker-compose.ci.yml run --rm api ls -la
+          echo "=== Conteúdo do app/ no container ==="
+          docker compose --env-file .env.ci -f docker-compose.ci.yml run --rm api ls -la app/ || echo "Diretório app/ não encontrado no container"
+          echo "=== Procurando arquivos de teste no container ==="
+          docker compose --env-file .env.ci -f docker-compose.ci.yml run --rm api find . -name "*test*.py" -o -name "test_*.py" || echo "Nenhum arquivo de teste encontrado no container"
+
+      - name: Debug - Test pytest discovery
+        run: |
+          echo "=== Testando descoberta de testes ==="
+          docker compose --env-file .env.ci -f docker-compose.ci.yml run --rm api uv run pytest --collect-only -q || echo "Falha na descoberta de testes"
+
+      - name: Run tests with verbose output
         run: |
           set -e
-          echo "Executando testes..."
-          docker compose --env-file .env.ci -f docker-compose.ci.yml run --rm api
+          echo "Executando testes com output verboso..."
+          docker compose --env-file .env.ci -f docker-compose.ci.yml run --rm api uv run pytest -v --tb=short
 
       - name: Show container logs on failure
         if: failure()

@@ -40,5 +40,5 @@ RUN chmod +x /wait-for-it.sh
 # Expõe porta caso necessário
 EXPOSE 8000
 
-# Comando default para rodar os testes usando uv
-CMD ["/wait-for-it.sh", "db:5432", "--timeout=60", "--strict", "--", "uv", "run", "pytest", "--maxfail=1", "--disable-warnings", "-q"]
+# Comando default mais robusto para rodar os testes
+CMD ["/bin/bash", "-c", "/wait-for-it.sh db:5432 --timeout=60 --strict && uv sync --dev && uv run pytest --maxfail=1 --disable-warnings -v tests/ || uv run pytest --maxfail=1 --disable-warnings -v app/tests/ || uv run pytest --maxfail=1 --disable-warnings -v . --ignore=.venv"]
