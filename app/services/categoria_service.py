@@ -1,54 +1,198 @@
+from fastapi import HTTPException, status
+from sqlalchemy import exists, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.future import select
 
-from app.models.categoria import Categoria
+from app.models import categoria, transacao, usuario
 from app.schemas.categoria import CategoriaCreate, CategoriaRead
+
+Categoria = categoria.Categoria
+Usuario = usuario.Usuario
+Transacao = transacao.Transacao
 
 
 class CategoriaService:
     @staticmethod
-    async def create(db: AsyncSession, categoria_in: CategoriaCreate) -> CategoriaRead:
-        categoria = Categoria(**categoria_in.model_dump())
+    async def listar(
+        db: AsyncSession,
+        current_user_id: int,
+        *,
+        incluir_subcategorias: bool = True,
+        apenas_principais: bool = False,
+        apenas_personalizadas: bool = False,
+    ) -> list[CategoriaRead]:
+        stmt = select(Categoria).where(Categoria.ativo.is_(True))
+
+        if apenas_personalizadas:
+            stmt = stmt.where(Categoria.usuario_id == current_user_id)
+        else:
+            stmt = stmt.where(
+                or_(
+                    Categoria.usuario_id == current_user_id,
+                    Categoria.usuario_id.is_(None),
+                )
+            )
+
+        if apenas_principais or not incluir_subcategorias:
+            stmt = stmt.where(Categoria.categoria_pai_id.is_(None))
+
+        stmt = stmt.order_by(Categoria.nome)
+        result = await db.execute(stmt)
+        categorias = result.scalars().all()
+
+        return [CategoriaRead.model_validate(cat) for cat in categorias]
+
+    @staticmethod
+    async def obter(
+        db: AsyncSession,
+        current_user_id: int,
+        categoria_id: int,
+    ) -> Categoria:
+        stmt = select(Categoria).where(
+            Categoria.id == categoria_id,
+            Categoria.ativo.is_(True),
+            or_(
+                Categoria.usuario_id == current_user_id, Categoria.usuario_id.is_(None)
+            ),
+        )
+        result = await db.execute(stmt)
+        categoria = result.scalars().first()
+
+        if not categoria:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Categoria não encontrada"
+            )
+
+        return categoria
+
+    @staticmethod
+    async def listar_subcategorias(
+        db: AsyncSession,
+        current_user_id: int,
+        categoria_id: int,
+    ) -> list[CategoriaRead]:
+        # Verifica se categoria pai existe
+        categoria_pai = await CategoriaService.obter(db, current_user_id, categoria_id)
+
+        stmt = (
+            select(Categoria)
+            .where(
+                Categoria.categoria_pai_id == categoria_pai.id,
+                Categoria.ativo.is_(True),
+                or_(
+                    Categoria.usuario_id == current_user_id,
+                    Categoria.usuario_id.is_(None),
+                ),
+            )
+            .order_by(Categoria.nome)
+        )
+        result = await db.execute(stmt)
+        subcategorias = result.scalars().all()
+
+        return [CategoriaRead.model_validate(cat) for cat in subcategorias]
+
+    @staticmethod
+    async def criar(
+        db: AsyncSession,
+        current_user_id: int,
+        request: CategoriaCreate,
+    ) -> Categoria:
+        categoria = Categoria(
+            nome=request.nome,
+            descricao=request.descricao,
+            cor=request.cor,
+            icone=request.icone,
+            categoria_pai_id=request.categoria_pai_id,
+            usuario_id=current_user_id,
+        )
         db.add(categoria)
         await db.commit()
         await db.refresh(categoria)
-        return CategoriaRead.model_validate(categoria)
+        return categoria
 
     @staticmethod
-    async def get(db: AsyncSession, categoria_id: int) -> CategoriaRead | None:
-        result = await db.execute(select(Categoria).where(Categoria.id == categoria_id))
-        categoria = result.scalar_one_or_none()
-        if categoria:
-            return CategoriaRead.model_validate(categoria)
-        return None
+    async def atualizar(
+        db: AsyncSession,
+        current_user_id: int,
+        categoria_id: int,
+        request: CategoriaCreate,
+    ) -> Categoria:
+        categoria = await CategoriaService.obter(db, current_user_id, categoria_id)
 
-    @staticmethod
-    async def list(
-        db: AsyncSession, skip: int = 0, limit: int = 100
-    ) -> list[CategoriaRead]:
-        result = await db.execute(select(Categoria).offset(skip).limit(limit))
-        return [CategoriaRead.model_validate(c) for c in result.scalars().all()]
+        # Valida se já existem transações vinculadas
+        stmt = select(Transacao).where(Transacao.categoria_id == categoria.id)
+        result = await db.execute(stmt)
+        transacoes = result.scalars().first()
 
-    @staticmethod
-    async def update(
-        db: AsyncSession, categoria_id: int, data: dict[str, str]
-    ) -> CategoriaRead | None:
-        result = await db.execute(select(Categoria).where(Categoria.id == categoria_id))
-        categoria = result.scalar_one_or_none()
-        if not categoria:
-            return None
-        for key, value in data.items():
-            setattr(categoria, key, value)
+        if transacoes:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Categoria não pode ser alterada pois já está vinculada a transações",
+            )
+
+        # Atualiza campos permitidos
+        categoria.nome = request.nome
+        categoria.descricao = request.descricao
+        categoria.cor = request.cor
+        categoria.icone = request.icone
+        categoria.categoria_pai_id = request.categoria_pai_id
+
+        db.add(categoria)
         await db.commit()
         await db.refresh(categoria)
-        return CategoriaRead.model_validate(categoria)
+
+        return categoria
 
     @staticmethod
-    async def delete(db: AsyncSession, categoria_id: int) -> bool:
-        result = await db.execute(select(Categoria).where(Categoria.id == categoria_id))
-        categoria = result.scalar_one_or_none()
+    async def _categoria_tem_transacoes(db: AsyncSession, categoria_id: int) -> bool:
+        """Helper method para verificar se categoria tem transações vinculadas"""
+        stmt = select(exists().where(Transacao.categoria_id == categoria_id))
+        result = await db.execute(stmt)
+        count: int = result.scalar_one()
+        return count > 0
+
+    @staticmethod
+    async def _buscar_categoria(
+        db: AsyncSession, categoria_id: int, current_user_id: int
+    ) -> Categoria:
+        """Helper method para buscar categoria"""
+        stmt = select(Categoria).where(
+            Categoria.id == categoria_id,
+            Categoria.ativo.is_(True),
+            or_(
+                Categoria.usuario_id == current_user_id,
+                Categoria.usuario_id.is_(None),
+            ),
+        )
+        result = await db.execute(stmt)
+        categoria: Categoria | None = result.scalars().first()
+
         if not categoria:
-            return False
-        await db.delete(categoria)
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Categoria não encontrada"
+            )
+
+        return categoria
+
+    @staticmethod
+    async def excluir(
+        db: AsyncSession, current_user_id: int, categoria_id: int
+    ) -> dict[str, bool]:
+        # Busca a categoria usando helper
+        categoria = await CategoriaService._buscar_categoria(
+            db, categoria_id, current_user_id
+        )
+
+        # Verifica transações vinculadas usando helper
+        if await CategoriaService._categoria_tem_transacoes(db, categoria_id):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Não é possível excluir a categoria, existem transações vinculadas",
+            )
+
+        # Soft-delete
+        categoria.ativo = False
+        db.add(categoria)
         await db.commit()
-        return True
+        await db.refresh(categoria)
+
+        return {"ok": True}

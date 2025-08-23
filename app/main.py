@@ -5,6 +5,7 @@ import pkgutil
 from types import ModuleType
 from typing import TYPE_CHECKING, cast
 
+from core.openapi import register_openapi_export
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pyngrok import ngrok  # type: ignore
@@ -13,6 +14,7 @@ from slowapi.util import get_remote_address
 import uvicorn
 
 from app.api.v1 import endpoints
+from app.core.config import settings
 from app.core.lifespan import lifespan
 from app.core.middleware import SecurityMiddleware
 
@@ -23,7 +25,15 @@ if TYPE_CHECKING:
 limiter = Limiter(key_func=get_remote_address)
 
 # FastAPI app
-app = FastAPI(title="Zenny API", version="1.0.0", lifespan=lifespan)
+app = FastAPI(
+    title="Zenny API",
+    version="0.1.0",
+    lifespan=lifespan,
+    docs_url=None if settings.ENV in ("prod", "production") else "/docs",
+    redoc_url=None if settings.ENV in ("prod", "production") else "/redoc",
+    openapi_url=None if settings.ENV in ("prod", "production") else "/openapi.json",
+    description="Zenny API - Sistema de autenticação e gerenciamento de contas",
+)
 
 # Rate limiting
 app.state.limiter = limiter
@@ -65,6 +75,7 @@ def include_all_routers(
 
 
 include_all_routers(app, endpoints)
+register_openapi_export(app)
 
 
 def run_ngrok(port: int = 8000) -> None:

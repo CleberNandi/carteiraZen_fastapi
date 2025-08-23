@@ -32,12 +32,13 @@ class SecurityManager:
     @staticmethod
     def get_password_hash(password: str) -> str:
         """Gera hash da senha"""
-        return pwd_context.hash(password, rounds=settings.get("BCRYPT_ROUNDS", 12))  # type: ignore
+        rounds = getattr(settings, "BCRYPT_ROUNDS", 12)
+        return pwd_context.using(bcrypt__rounds=rounds).hash(password)
 
     @staticmethod
     def validate_password_strength(password: str) -> tuple[bool, str]:
         """Valida força da senha"""
-        min_length = settings.get("PASSWORD_MIN_LENGTH", 8)  # type: ignore
+        min_length = getattr(settings, "PASSWORD_MIN_LENGTH", 8)
 
         if len(password) < min_length:
             return False, f"Senha deve ter pelo menos {min_length} caracteres"
@@ -65,14 +66,14 @@ class JWTManager:
         """Cria token de acesso"""
         to_encode = data.copy()
         expire = datetime.now(UTC) + timedelta(
-            minutes=settings.get("JWT_ACCESS_TOKEN_EXPIRE_MINUTES", 30)  # type: ignore
+            minutes=getattr(settings, "JWT_ACCESS_TOKEN_EXPIRE_MINUTES", 30)
         )
         to_encode.update({"exp": expire, "type": "access"})
 
         return jwt.encode(
             to_encode,
-            settings.JWT_SECRET_KEY,  # type: ignore
-            algorithm=settings.get("JWT_ALGORITHM", "HS256"),  # type: ignore
+            settings.JWT_SECRET_KEY,
+            algorithm=getattr(settings, "JWT_ALGORITHM", "HS256"),
         )
 
     @staticmethod
@@ -80,14 +81,14 @@ class JWTManager:
         """Cria token de refresh"""
         to_encode = data.copy()
         expire = datetime.now(UTC) + timedelta(
-            days=settings.get("JWT_REFRESH_TOKEN_EXPIRE_DAYS", 30)  # type: ignore
+            days=getattr(settings, "JWT_REFRESH_TOKEN_EXPIRE_DAYS", 30)
         )
         to_encode.update({"exp": expire, "type": "refresh"})
 
         return jwt.encode(
             to_encode,
-            settings.JWT_SECRET_KEY,  # type: ignore
-            algorithm=settings.get("JWT_ALGORITHM", "HS256"),  # type: ignore
+            settings.JWT_SECRET_KEY,
+            algorithm=getattr(settings, "JWT_ALGORITHM", "HS256"),
         )
 
     @staticmethod
@@ -98,8 +99,8 @@ class JWTManager:
         try:
             payload = jwt.decode(
                 token,
-                settings.JWT_SECRET_KEY,  # type: ignore
-                algorithms=[settings.get("JWT_ALGORITHM", "HS256")],  # type: ignore
+                settings.JWT_SECRET_KEY,
+                algorithms=[getattr(settings, "JWT_ALGORITHM", "HS256")],
             )
         except JWTError:
             return None
@@ -120,9 +121,9 @@ class TOTPManager:
     @staticmethod
     def generate_qr_code(email: str, secret: str) -> str:
         """Gera QR code para 2FA (retorna base64)"""
-        issuer = settings.get("TOTP_ISSUER_NAME", "Zenny")  # type: ignore
+        issuer = getattr(settings, "TOTP_ISSUER_NAME", "Zenny")
         totp = pyotp.TOTP(secret)
-        provisioning_uri = totp.provisioning_uri(name=email, issuer_name=issuer)  # type: ignore
+        provisioning_uri = totp.provisioning_uri(name=email, issuer_name=issuer)
 
         # Gera QR code
         qr = qrcode.QRCode(version=1, box_size=10, border=5)

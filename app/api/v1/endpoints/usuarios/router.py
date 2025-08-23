@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.database import get_db
+from app.core.database import get_async_db
 from app.schemas.usuario import UsuarioCreate, UsuarioRead
 from app.services.usuario_service import UsuarioService
 
@@ -11,7 +11,7 @@ router = APIRouter()
 @router.post("/", response_model=UsuarioRead)
 async def create_usuario(
     usuario_in: UsuarioCreate,
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_async_db),
 ) -> UsuarioRead:
     return await UsuarioService.create(db, usuario_in)
 
@@ -19,7 +19,7 @@ async def create_usuario(
 @router.get("/{usuario_id}", response_model=UsuarioRead)
 async def get_usuario(
     usuario_id: int,
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_async_db),
 ) -> UsuarioRead:
     usuario = await UsuarioService.get(db, usuario_id)
     if not usuario:
@@ -31,7 +31,7 @@ async def get_usuario(
 async def list_usuarios(
     skip: int = 0,
     limit: int = 100,
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_async_db),
 ) -> list[UsuarioRead]:
     return await UsuarioService.list(db, skip, limit)
 
@@ -40,7 +40,7 @@ async def list_usuarios(
 async def update_usuario(
     usuario_id: int,
     data: UsuarioCreate,
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_async_db),
 ) -> UsuarioRead:
     updated = await UsuarioService.update(db, usuario_id, data.model_dump())
     if not updated:
@@ -50,7 +50,7 @@ async def update_usuario(
 
 @router.delete("/{usuario_id}")
 async def delete_usuario(
-    usuario_id: int, db: AsyncSession = Depends(get_db)
+    usuario_id: int, db: AsyncSession = Depends(get_async_db)
 ) -> dict[str, bool]:
     deleted = await UsuarioService.delete(db, usuario_id)
     if not deleted:

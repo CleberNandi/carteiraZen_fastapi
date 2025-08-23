@@ -19,6 +19,10 @@ class Dynaconf:
     SMTP_SERVER: str
     SMTP_PORT: str
     ENV_MODE: str
-    ZNY_POSTGRES_USER: str
+    POSTGRES_USER: str
+    POSTGRES_PASSWORD: str
+    POSTGRES_HOST: str
+    POSTGRES_DB: str
     FRONTEND_URL: str
+    JWT_SECRET_KEY: str
     def __init__(self, *args: object, **kwargs: object) -> None: ...
