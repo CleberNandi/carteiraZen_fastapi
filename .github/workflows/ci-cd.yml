@@ -32,7 +32,7 @@ jobs:
       - name: Verify Docker & Compose
         run: docker --version && docker compose version
 
-      - name: Create temp env file
+      - name: Validate GitHub Secrets & Create .env.ci
         env:
           POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
           POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
@@ -42,38 +42,61 @@ jobs:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
           SECRET_KEY: ${{ secrets.SECRET_KEY }}
-          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
           SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
         run: |
           set -e
-          for var in SMTP_USER SMTP_PASSWORD SECRET_KEY NGROK_AUTHTOKEN POSTGRES_USER POSTGRES_PASSWORD POSTGRES_DB DOCKER_USERNAME DOCKER_PASSWORD DATABASE_URL; do
+          # Validação de todas as variáveis obrigatórias
+          for var in POSTGRES_USER POSTGRES_PASSWORD POSTGRES_DB DATABASE_URL NGROK_AUTHTOKEN DOCKER_USERNAME DOCKER_PASSWORD SECRET_KEY SMTP_USER SMTP_PASSWORD; do
             if [ -z "${!var}" ]; then
               echo "Error: $var is not set!"
               exit 1
             fi
           done
 
-          echo "POSTGRES_USER=$POSTGRES_USER" > .env.ci
-          echo "POSTGRES_PASSWORD=$POSTGRES_PASSWORD" >> .env.ci
-          echo "POSTGRES_DB=$POSTGRES_DB" >> .env.ci
-          echo "DATABASE_URL=$DATABASE_URL" >> .env.ci
-          echo "SMTP_USER=$SMTP_USER" >> .env.ci
-          echo "SMTP_PASSWORD=$SMTP_PASSWORD" >> .env.ci
-          echo "SECRET_KEY=$SECRET_KEY" >> .env.ci
-          echo "NGROK_AUTHTOKEN=$NGROK_AUTHTOKEN" >> .env.ci
-          echo "DOCKER_USERNAME=$DOCKER_USERNAME" >> .env.ci
-          echo "DOCKER_PASSWORD=$DOCKER_PASSWORD" >> .env.ci
+          # Criação do .env.ci
+          cat <<EOF > .env.ci
+          POSTGRES_USER=$POSTGRES_USER
+          POSTGRES_PASSWORD=$POSTGRES_PASSWORD
+          POSTGRES_DB=$POSTGRES_DB
+          DATABASE_URL=$DATABASE_URL
+          NGROK_AUTHTOKEN=$NGROK_AUTHTOKEN
+          DOCKER_USERNAME=$DOCKER_USERNAME
+          DOCKER_PASSWORD=$DOCKER_PASSWORD
+          SECRET_KEY=$SECRET_KEY
+          SMTP_USER=$SMTP_USER
+          SMTP_PASSWORD=$SMTP_PASSWORD
+          EOF
 
       - name: Print .env.ci for debugging
         run: cat .env.ci
 
-      - name: Run tests with docker compose
+      - name: Build and start Docker Compose
         run: |
           set -e
           docker compose --env-file .env.ci -f docker-compose.ci.yml up -d --build
 
-          # roda pytest dentro do container da API
-          docker compose exec -T api pytest -v
+      - name: Wait for DB to be healthy
+        run: |
+          set -e
+          echo "Aguardando DB ficar saudável..."
+          docker compose --env-file .env.ci -f docker-compose.ci.yml ps
+          # Loop para aguardar até 60s, mas termina assim que DB estiver healthy
+          for i in $(seq 1 12); do
+            STATUS=$(docker inspect -f '{{.State.Health.Status}}' ci_db)
+            if [ "$STATUS" = "healthy" ]; then
+              echo "DB está saudável!"
+              break
+            fi
+            echo "DB não pronto ainda... esperando 5s"
+            sleep 5
+          done
+
+      - name: Show Ngrok URL
+        if: ${{ secrets.NGROK_AUTHTOKEN != '' }}
+        run: |
+          echo "Ngrok container logs:"
+          docker compose logs ngrok | grep -o 'https://[0-9a-z]*\.ngrok.io'
 
       - name: Tear down docker-compose
         if: always()

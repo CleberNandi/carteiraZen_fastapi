@@ -17,10 +17,11 @@ fileConfig(config.config_file_name)
 logger = logging.getLogger("alembic.env")
 
 # DATABASE_URL já expandido pelo Dynaconf
+# Montar DATABASE_URL dinamicamente
 DATABASE_URL = (
-    f"postgresql+asyncpg://{settings.POSTGRES_USER}:{settings.POSTGRES_PASSWORD}"
-    f"@{settings.POSTGRES_HOST}:{settings.POSTGRES_PORT}/{settings.POSTGRES_DB}"
+    f"postgresql+asyncpg://{settings.POSTGRES_USER}:{settings.POSTGRES_PASSWORD}@db:5432/{settings.POSTGRES_DB}"
 )
+
 if settings.ENV_MODE == "test":
     DATABASE_URL = "sqlite+aiosqlite:///:memory:"
 
@@ -55,9 +56,7 @@ def validate_env_and_db() -> None:
 def run_migrations_offline() -> None:
     """Migrations no modo offline (sempre Postgres)."""
     validate_env_and_db()
-    logger.info(
-        f"[Alembic] OFFLINE | ENV_MODE: {settings.ENV_MODE} | Banco: {mask_db_url(DATABASE_URL)}"
-    )
+    logger.info(f"[Alembic] OFFLINE | ENV_MODE: {settings.ENV_MODE} | Banco: {mask_db_url(DATABASE_URL)}")
     context.configure(
         url=DATABASE_URL,
         target_metadata=target_metadata,
@@ -76,12 +75,8 @@ def do_run_migrations(connection: Connection) -> None:
 
 async def run_migrations_online() -> None:
     validate_env_and_db()
-    logger.info(
-        f"[Alembic] ONLINE | ENV_MODE: {settings.ENV_MODE} | Banco: {mask_db_url(DATABASE_URL)}"
-    )
-    connectable = create_async_engine(
-        DATABASE_URL, poolclass=pool.NullPool, future=True
-    )
+    logger.info(f"[Alembic] ONLINE | ENV_MODE: {settings.ENV_MODE} | Banco: {mask_db_url(DATABASE_URL)}")
+    connectable = create_async_engine(DATABASE_URL, poolclass=pool.NullPool, future=True)
     async with connectable.connect() as connection:
         await connection.run_sync(do_run_migrations)
     await connectable.dispose()

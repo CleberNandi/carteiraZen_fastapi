@@ -7,20 +7,6 @@ from app.core.config import settings
 
 DATABASE_URL = settings.DATABASE_URL
 
-
-def mask_db_url(url: str) -> str:
-    """Remove senha da URL para exibir no log."""
-    if "@" in url and "://" in url:
-        prefix, rest = url.split("://", 1)
-        if "@" in rest and ":" in rest.split("@")[0]:
-            user, rest_after_user = rest.split("@", 1)
-            user_no_pass = user.split(":")[0]
-            return f"{prefix}://{user_no_pass}:***@{rest_after_user}"
-    return url
-
-
-print(f"🔹 DATABASE_URL database: {mask_db_url(DATABASE_URL)}")
-
 # Async Engine
 engine = create_async_engine(DATABASE_URL, echo=False)
 
