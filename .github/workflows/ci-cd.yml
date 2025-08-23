@@ -68,9 +68,6 @@ jobs:
           SMTP_PASSWORD=$SMTP_PASSWORD
           EOF
 
-      - name: Print .env.ci for debugging
-        run: cat .env.ci
-
       - name: Build and start services (DB + Ngrok)
         run: |
           set -e
@@ -80,7 +77,6 @@ jobs:
         run: |
           set -e
           echo "Aguardando DB ficar saudável..."
-          docker compose --env-file .env.ci -f docker-compose.ci.yml ps
           for i in $(seq 1 12); do
             STATUS=$(docker inspect -f '{{.State.Health.Status}}' ci_db)
             if [ "$STATUS" = "healthy" ]; then
@@ -96,34 +92,11 @@ jobs:
           set -e
           docker compose --env-file .env.ci -f docker-compose.ci.yml build api
 
-      - name: Debug - Check project structure
-        run: |
-          echo "=== Estrutura do projeto ==="
-          ls -la
-          echo "=== Conteúdo do app/ ==="
-          ls -la app/ || echo "Diretório app/ não encontrado"
-          echo "=== Procurando arquivos de teste ==="
-          find . -name "*test*.py" -o -name "test_*.py" || echo "Nenhum arquivo de teste encontrado"
-
-      - name: Debug - Check container structure
-        run: |
-          echo "=== Estrutura dentro do container ==="
-          docker compose --env-file .env.ci -f docker-compose.ci.yml run --rm api ls -la
-          echo "=== Conteúdo do app/ no container ==="
-          docker compose --env-file .env.ci -f docker-compose.ci.yml run --rm api ls -la app/ || echo "Diretório app/ não encontrado no container"
-          echo "=== Procurando arquivos de teste no container ==="
-          docker compose --env-file .env.ci -f docker-compose.ci.yml run --rm api find . -name "*test*.py" -o -name "test_*.py" || echo "Nenhum arquivo de teste encontrado no container"
-
-      - name: Debug - Test pytest discovery
-        run: |
-          echo "=== Testando descoberta de testes ==="
-          docker compose --env-file .env.ci -f docker-compose.ci.yml run --rm api uv run pytest --collect-only -q || echo "Falha na descoberta de testes"
-
-      - name: Run tests with verbose output
+      - name: Run tests
         run: |
           set -e
-          echo "Executando testes com output verboso..."
-          docker compose --env-file .env.ci -f docker-compose.ci.yml run --rm api uv run pytest -v --tb=short
+          echo "Executando testes..."
+          docker compose --env-file .env.ci -f docker-compose.ci.yml run --rm api
 
       - name: Show container logs on failure
         if: failure()

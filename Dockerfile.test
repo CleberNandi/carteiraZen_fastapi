@@ -10,8 +10,9 @@ RUN pip install --upgrade pip setuptools wheel && \
 # Copia arquivos de dependências e README
 COPY pyproject.toml settings.toml README.md ./
 
-# Copia o código fonte
+# Copia o código fonte E os testes
 COPY app ./app
+COPY tests ./tests
 
 # Instala todas as dependências (prod + dev) e cria venv
 RUN uv sync --dev
@@ -40,5 +41,5 @@ RUN chmod +x /wait-for-it.sh
 # Expõe porta caso necessário
 EXPOSE 8000
 
-# Comando default mais robusto para rodar os testes
-CMD ["/bin/bash", "-c", "/wait-for-it.sh db:5432 --timeout=60 --strict && uv sync --dev && uv run pytest --maxfail=1 --disable-warnings -v tests/ || uv run pytest --maxfail=1 --disable-warnings -v app/tests/ || uv run pytest --maxfail=1 --disable-warnings -v . --ignore=.venv"]
+# Comando default para rodar os testes usando uv
+CMD ["/wait-for-it.sh", "db:5432", "--timeout=60", "--strict", "--", "uv", "run", "pytest", "--maxfail=1", "--disable-warnings", "-q"]
