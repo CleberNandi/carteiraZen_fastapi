@@ -1,15 +1,34 @@
 import asyncio
 import logging
 from logging.config import fileConfig
+import os
+from pathlib import Path
+import sys
 
 from sqlalchemy import pool
 from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import create_async_engine
 
 from alembic import context
-from app import models  # noqa: F401
-from app.core.config import settings
-from app.core.database import Base
+
+# CORREÇÃO: Adiciona o diretório raiz ao Python path
+root_dir = Path(__file__).parent.parent
+if str(root_dir) not in sys.path:
+    sys.path.insert(0, str(root_dir))
+
+# Agora pode importar os models e settings
+try:
+    from app import models  # noqa: F401
+    from app.core.config import settings
+    from app.core.database import Base
+except ImportError as e:
+    print(f"❌ Erro ao importar módulos: {e}")
+    print(f"🔍 Python path atual: {sys.path}")
+    print(f"🔍 Diretório de trabalho: {os.getcwd()}")
+    print(f"🔍 Conteúdo do diretório atual: {os.listdir('.')}")
+    if os.path.exists("app"):
+        print(f"🔍 Conteúdo do diretório app: {os.listdir('app')}")
+    raise
 
 # Config Alembic
 config = context.config

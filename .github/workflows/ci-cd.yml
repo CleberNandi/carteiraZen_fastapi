@@ -134,7 +134,34 @@ jobs:
         run: |
           set -e
           echo "🔹 Rodando migrations Alembic na base de CI..."
-          docker compose --env-file .env.ci -f docker-compose.ci.yml run --rm api alembic upgrade head
+
+          # Debug: Verificar estado do container antes de executar Alembic
+          echo "🔍 Debugando ambiente do container..."
+          docker compose --env-file .env.ci -f docker-compose.ci.yml run --rm api python -c "
+          import sys, os
+          print('🐍 Python:', sys.version)
+          print('📁 CWD:', os.getcwd())
+          print('🛤️  Python Path:', sys.path[:3], '...')
+          print('📂 Conteúdo:', [f for f in os.listdir('.') if not f.startswith('.')][:10])
+          if os.path.exists('.venv'): print('✅ .venv existe')
+          else: print('❌ .venv não existe')
+          try:
+              import dynaconf
+              print('✅ dynaconf importado com sucesso')
+          except ImportError as e:
+              print(f'❌ dynaconf: {e}')
+          "
+
+          # Verificar se o container tem ambiente virtual
+          VENV_EXISTS=$(docker compose --env-file .env.ci -f docker-compose.ci.yml run --rm api bash -c "if [ -d .venv ]; then echo 'true'; else echo 'false'; fi")
+
+          if [ "$VENV_EXISTS" = "true" ]; then
+            echo "📦 Usando ambiente virtual (.venv) para Alembic..."
+            docker compose --env-file .env.ci -f docker-compose.ci.yml run --rm api .venv/bin/alembic upgrade head
+          else
+            echo "📦 Usando uv run para Alembic..."
+            docker compose --env-file .env.ci -f docker-compose.ci.yml run --rm api uv run alembic upgrade head
+          fi
 
       - name: Build API container
         run: |
