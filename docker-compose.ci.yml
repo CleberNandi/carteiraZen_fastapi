@@ -30,7 +30,7 @@ services:
         condition: service_healthy
     ports:
       - "8000:8000"
-    command: pytest --maxfail=1 --disable-warnings -q
+    # Removido o command aqui - será executado pelo CMD do Dockerfile
 
   ngrok:
     image: wernight/ngrok

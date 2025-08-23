@@ -13,7 +13,7 @@ COPY pyproject.toml settings.toml README.md ./
 # Copia o código fonte
 COPY app ./app
 
-# Instala todas as dependências (prod + dev)
+# Instala todas as dependências (prod + dev) e cria venv
 RUN uv sync --dev
 
 # Container final para testes
@@ -27,9 +27,10 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-ins
     libfreetype6-dev libffi-dev libssl-dev curl bash \
     && rm -rf /var/lib/apt/lists/*
 
-# Copia pacotes e código do builder
-COPY --from=builder /usr/local/lib/python3.13/site-packages /usr/local/lib/python3.13/site-packages
-COPY --from=builder /usr/local/bin /usr/local/bin
+# Instala uv no container final
+RUN pip install --upgrade pip && pip install uv
+
+# Copia o projeto completo do builder (incluindo .venv)
 COPY --from=builder /app /app
 
 # wait-for-it para garantir que o DB esteja pronto
@@ -39,5 +40,5 @@ RUN chmod +x /wait-for-it.sh
 # Expõe porta caso necessário
 EXPOSE 8000
 
-# Comando default para rodar os testes
-CMD ["/wait-for-it.sh", "db:5432", "--timeout=60", "--strict", "--", "uv", "pytest", "--maxfail=1", "--disable-warnings", "-q"]
+# Comando default para rodar os testes usando uv
+CMD ["/wait-for-it.sh", "db:5432", "--timeout=60", "--strict", "--", "uv", "run", "pytest", "--maxfail=1", "--disable-warnings", "-q"]

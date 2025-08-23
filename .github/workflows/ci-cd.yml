@@ -71,10 +71,10 @@ jobs:
       - name: Print .env.ci for debugging
         run: cat .env.ci
 
-      - name: Build and start Docker Compose
+      - name: Build and start services (DB + Ngrok)
         run: |
           set -e
-          docker compose --env-file .env.ci -f docker-compose.ci.yml up -d --build
+          docker compose --env-file .env.ci -f docker-compose.ci.yml up -d db ngrok
 
       - name: Wait for DB to be healthy
         run: |
@@ -91,13 +91,34 @@ jobs:
             sleep 5
           done
 
+      - name: Build API container
+        run: |
+          set -e
+          docker compose --env-file .env.ci -f docker-compose.ci.yml build api
+
+      - name: Run tests
+        run: |
+          set -e
+          echo "Executando testes..."
+          docker compose --env-file .env.ci -f docker-compose.ci.yml run --rm api
+
+      - name: Show container logs on failure
+        if: failure()
+        run: |
+          echo "=== API Container Logs ==="
+          docker compose --env-file .env.ci -f docker-compose.ci.yml logs api || true
+          echo "=== DB Container Logs ==="
+          docker compose --env-file .env.ci -f docker-compose.ci.yml logs db || true
+
       - name: Show Ngrok URL
         env:
           NGROK_AUTHTOKEN: ${{ secrets.NGROK_AUTHTOKEN }}
         run: |
           if [ -n "$NGROK_AUTHTOKEN" ]; then
             echo "Ngrok container logs:"
-            docker compose logs ngrok | grep -o 'https://[0-9a-z]*\.ngrok.io'
+            docker compose --env-file .env.ci -f docker-compose.ci.yml logs ngrok | grep -o 'https://[0-9a-z]*\.ngrok-free\.app' || \
+            docker compose --env-file .env.ci -f docker-compose.ci.yml logs ngrok | grep -o 'https://[0-9a-z]*\.ngrok\.io' || \
+            echo "URL do Ngrok não encontrada nos logs"
           else
             echo "NGROK_AUTHTOKEN não configurado, pulando exibição da URL"
           fi
