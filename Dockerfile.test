@@ -7,12 +7,16 @@ WORKDIR /app
 RUN pip install --upgrade pip setuptools wheel && \
     pip install uv
 
-# Copia arquivos de dependências e README
+# Copia arquivos de dependências
 COPY pyproject.toml settings.toml README.md ./
 
-# Copia o código fonte E os testes
+# Copia TODOS os diretórios e arquivos necessários
 COPY app ./app
 COPY tests ./tests
+COPY seeds ./seeds
+COPY alembic ./alembic
+COPY alembic.ini ./
+COPY typings ./typings
 
 # Instala todas as dependências (prod + dev) e cria venv
 RUN uv sync --dev
@@ -31,7 +35,7 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-ins
 # Instala uv no container final
 RUN pip install --upgrade pip && pip install uv
 
-# Copia o projeto completo do builder (incluindo .venv)
+# Copia o projeto completo do builder (incluindo .venv e todos os diretórios)
 COPY --from=builder /app /app
 
 # wait-for-it para garantir que o DB esteja pronto
@@ -42,4 +46,4 @@ RUN chmod +x /wait-for-it.sh
 EXPOSE 8000
 
 # Comando default para rodar os testes usando uv
-CMD ["/wait-for-it.sh", "db:5432", "--timeout=60", "--strict", "--", "uv", "run", "pytest", "--maxfail=1", "--disable-warnings", "-q"]
+CMD ["/wait-for-it.sh", "db:5432", "--timeout=60", "--strict", "--", "uv", "run", "pytest", "--maxfail=1", "--disable-warnings", "-v"]
