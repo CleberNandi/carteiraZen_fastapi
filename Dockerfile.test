@@ -35,6 +35,9 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-ins
 # Instala uv no container final
 RUN pip install --upgrade pip && pip install uv
 
+# Instala o Alemnbic
+RUN pip install --upgrade pip setuptools wheel alembic
+
 # Copia o projeto completo do builder (incluindo .venv e todos os diretórios)
 COPY --from=builder /app /app
 
