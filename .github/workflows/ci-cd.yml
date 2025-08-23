@@ -93,9 +93,15 @@ jobs:
 
       - name: Show Ngrok URL
         if: ${{ secrets.NGROK_AUTHTOKEN != '' }}
+        env:
+          NGROK_AUTHTOKEN: ${{ secrets.NGROK_AUTHTOKEN }}
         run: |
-          echo "Ngrok container logs:"
-          docker compose logs ngrok | grep -o 'https://[0-9a-z]*\.ngrok.io'
+          if [ -n "$NGROK_AUTHTOKEN" ]; then
+            echo "Ngrok container logs:"
+            docker compose logs ngrok | grep -o 'https://[0-9a-z]*\.ngrok.io'
+          else
+            echo "NGROK_AUTHTOKEN não configurado, pulando exibição da URL"
+          fi
 
       - name: Tear down docker-compose
         if: always()
