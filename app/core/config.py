@@ -10,7 +10,7 @@ settings = Dynaconf(
 )
 
 # Montar DATABASE_URL dinamicamente
-settings.DATABASE_URL = f"postgresql+asyncpg://{settings.POSTGRES_USER}:{settings.POSTGRES_PASSWORD}@db:5432/{settings.POSTGRES_DB}"
+settings.DATABASE_URL = f"postgresql+asyncpg://{settings.POSTGRES_USER}:{settings.POSTGRES_PASSWORD}@{settings.POSTGRES_HOST}:5432/{settings.POSTGRES_DB}"
 
 
 def mask_db_url(url: str) -> str:
