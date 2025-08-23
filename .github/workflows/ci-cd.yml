@@ -44,29 +44,59 @@ jobs:
           SECRET_KEY: ${{ secrets.SECRET_KEY }}
           SMTP_USER: ${{ secrets.SMTP_USER }}
           SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+          SMTP_SERVER: ${{ secrets.SMTP_SERVER }}
+          SMTP_PORT: ${{ secrets.SMTP_PORT }}
+          ALGORITHM: ${{ secrets.ALGORITHM }}
+          PASSWORD_SYSTEM: ${{ secrets.PASSWORD_SYSTEM }}
         run: |
           set -e
+
           # Validação das variáveis obrigatórias
-          for var in POSTGRES_USER POSTGRES_PASSWORD POSTGRES_DB DATABASE_URL NGROK_AUTHTOKEN DOCKER_USERNAME DOCKER_PASSWORD SECRET_KEY SMTP_USER SMTP_PASSWORD; do
+          for var in POSTGRES_USER POSTGRES_PASSWORD POSTGRES_DB DATABASE_URL DOCKER_USERNAME DOCKER_PASSWORD SECRET_KEY SMTP_USER SMTP_PASSWORD SMTP_SERVER SMTP_PORT; do
             if [ -z "${!var}" ]; then
               echo "Error: $var is not set!"
               exit 1
             fi
           done
 
-          # Criação do .env.ci
+          # Criação do .env.ci com TODAS as configurações necessárias
           cat <<EOF > .env.ci
+          # Database
           POSTGRES_USER=$POSTGRES_USER
           POSTGRES_PASSWORD=$POSTGRES_PASSWORD
           POSTGRES_DB=$POSTGRES_DB
           DATABASE_URL=$DATABASE_URL
-          NGROK_AUTHTOKEN=$NGROK_AUTHTOKEN
+
+          # Docker
           DOCKER_USERNAME=$DOCKER_USERNAME
           DOCKER_PASSWORD=$DOCKER_PASSWORD
+
+          # Security & Auth
           SECRET_KEY=$SECRET_KEY
+          ALGORITHM=${ALGORITHM:-HS256}
+          PASSWORD_SYSTEM=${PASSWORD_SYSTEM:-}
+
+          # Email/SMTP
           SMTP_USER=$SMTP_USER
           SMTP_PASSWORD=$SMTP_PASSWORD
+          SMTP_SERVER=$SMTP_SERVER
+          SMTP_PORT=$SMTP_PORT
+          SMTP_TLS=true
+          SMTP_SSL=false
+
+          # Ngrok (opcional)
+          NGROK_AUTHTOKEN=${NGROK_AUTHTOKEN:-}
+
+          # Environment
+          ENVIRONMENT=testing
+          DEBUG=false
+          TESTING=true
           EOF
+
+      - name: Print .env.ci for debugging (sem senhas)
+        run: |
+          echo "=== Configurações do .env.ci (sem senhas) ==="
+          sed 's/PASSWORD=.*/PASSWORD=***/' .env.ci | sed 's/SECRET_KEY=.*/SECRET_KEY=***/' | sed 's/AUTHTOKEN=.*/AUTHTOKEN=***/'
 
       - name: Build and start services (DB + Ngrok)
         run: |
@@ -83,9 +113,16 @@ jobs:
               echo "DB está saudável!"
               break
             fi
-            echo "DB não pronto ainda... esperando 5s"
+            echo "DB não pronto ainda... esperando 5s (tentativa $i/12)"
             sleep 5
           done
+
+          # Verifica se DB está realmente saudável
+          if [ "$(docker inspect -f '{{.State.Health.Status}}' ci_db)" != "healthy" ]; then
+            echo "❌ DB não ficou saudável após 60 segundos"
+            docker logs ci_db
+            exit 1
+          fi
 
       - name: Build API container
         run: |
@@ -95,31 +132,34 @@ jobs:
       - name: Run tests
         run: |
           set -e
-          echo "Executando testes..."
+          echo "🧪 Executando testes..."
           docker compose --env-file .env.ci -f docker-compose.ci.yml run --rm api
 
       - name: Show container logs on failure
         if: failure()
         run: |
-          echo "=== API Container Logs ==="
+          echo "=== 🔍 API Container Logs ==="
           docker compose --env-file .env.ci -f docker-compose.ci.yml logs api || true
-          echo "=== DB Container Logs ==="
+          echo "=== 🔍 DB Container Logs ==="
           docker compose --env-file .env.ci -f docker-compose.ci.yml logs db || true
+          echo "=== 🔍 Ngrok Container Logs ==="
+          docker compose --env-file .env.ci -f docker-compose.ci.yml logs ngrok || true
 
       - name: Show Ngrok URL
         env:
           NGROK_AUTHTOKEN: ${{ secrets.NGROK_AUTHTOKEN }}
         run: |
           if [ -n "$NGROK_AUTHTOKEN" ]; then
-            echo "Ngrok container logs:"
+            echo "🌐 Procurando URL do Ngrok..."
             docker compose --env-file .env.ci -f docker-compose.ci.yml logs ngrok | grep -o 'https://[0-9a-z]*\.ngrok-free\.app' || \
             docker compose --env-file .env.ci -f docker-compose.ci.yml logs ngrok | grep -o 'https://[0-9a-z]*\.ngrok\.io' || \
-            echo "URL do Ngrok não encontrada nos logs"
+            echo "ℹ️  URL do Ngrok não encontrada nos logs"
           else
-            echo "NGROK_AUTHTOKEN não configurado, pulando exibição da URL"
+            echo "ℹ️  NGROK_AUTHTOKEN não configurado, pulando exibição da URL"
           fi
 
       - name: Tear down docker-compose
         if: always()
         run: |
+          echo "🧹 Limpando containers..."
           docker compose --env-file .env.ci -f docker-compose.ci.yml down -v --remove-orphans
