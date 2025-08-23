@@ -46,7 +46,7 @@ jobs:
           SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
         run: |
           set -e
-          # Validação de todas as variáveis obrigatórias
+          # Validação das variáveis obrigatórias
           for var in POSTGRES_USER POSTGRES_PASSWORD POSTGRES_DB DATABASE_URL NGROK_AUTHTOKEN DOCKER_USERNAME DOCKER_PASSWORD SECRET_KEY SMTP_USER SMTP_PASSWORD; do
             if [ -z "${!var}" ]; then
               echo "Error: $var is not set!"
@@ -81,7 +81,6 @@ jobs:
           set -e
           echo "Aguardando DB ficar saudável..."
           docker compose --env-file .env.ci -f docker-compose.ci.yml ps
-          # Loop para aguardar até 60s, mas termina assim que DB estiver healthy
           for i in $(seq 1 12); do
             STATUS=$(docker inspect -f '{{.State.Health.Status}}' ci_db)
             if [ "$STATUS" = "healthy" ]; then
