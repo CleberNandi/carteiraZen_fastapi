@@ -14,6 +14,12 @@ on:
       - "main"
   workflow_dispatch:
 
+# Permissões necessárias para criar PRs automaticamente
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
 jobs:
   build-test:
     runs-on: ubuntu-latest
@@ -212,46 +218,45 @@ jobs:
 
       - name: Create Pull Request
         if: steps.check-pr.outputs.exists == 'false'
-        uses: actions/github-script@v6
+        uses: repo-sync/pull-request@v2
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            const { data: pr } = await github.rest.pulls.create({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              title: `✨ Feature: ${{ env.FEATURE_NAME }}`,
-              head: '${{ env.BRANCH_NAME }}',
-              base: 'dev',
-              body: `## 🚀 Auto PR - Feature Branch
+          source_branch: ${{ env.BRANCH_NAME }}
+          destination_branch: "dev"
+          pr_title: "✨ Feature: ${{ env.FEATURE_NAME }}"
+          pr_body: |
+            ## 🚀 Auto PR - Feature Branch
 
-              **Branch**: \`${{ env.BRANCH_NAME }}\`
-              **Testes**: ✅ Passaram com sucesso
-              **Workflow**: #${{ github.run_number }}
+            **Branch**: `${{ env.BRANCH_NAME }}`
+            **Testes**: ✅ Passaram com sucesso
+            **Workflow**: #${{ github.run_number }}
 
-              ### 📋 Checklist
-              - [x] Testes executados automaticamente
-              - [ ] Code review necessário
-              - [ ] Documentação atualizada (se necessário)
+            ### 📋 Checklist
+            - [x] Testes executados automaticamente
+            - [ ] Code review necessário
+            - [ ] Documentação atualizada (se necessário)
 
-              ---
-              *Esta PR foi criada automaticamente após os testes passarem no branch feature.*
+            ---
+            *Esta PR foi criada automaticamente após os testes passarem no branch feature.*
 
-              **Commit**: ${{ github.sha }}
-              **Author**: @${{ github.actor }}`,
-              draft: false
-            });
+            **Commit**: ${{ github.sha }}
+            **Author**: @${{ github.actor }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+      - name: PR Success Summary
+        if: steps.check-pr.outputs.exists == 'false'
+        run: |
+          echo "✅ PR criada com sucesso!"
+          echo "🌿 Feature: ${{ env.FEATURE_NAME }}"
+          echo "📝 Branch: ${{ env.BRANCH_NAME }}"
 
-            console.log(`✅ PR criada com sucesso: #${pr.number}`);
-            console.log(`🔗 URL: ${pr.html_url}`);
+          cat >> $GITHUB_STEP_SUMMARY <<EOF
+          ## 🎉 PR Criada Automaticamente
 
-            core.summary.addHeading('🎉 PR Criada Automaticamente');
-            core.summary.addRaw(`
-            - 🌿 **Feature**: ${{ env.FEATURE_NAME }}
-            - 🔗 **PR**: [#${pr.number}](${pr.html_url})
-            - ✅ **Testes**: Passaram
-            - 👤 **Author**: @${{ github.actor }}
-            `);
-            core.summary.write();
+          - 🌿 **Feature**: ${{ env.FEATURE_NAME }}
+          - 📝 **Branch**: ${{ env.BRANCH_NAME }}
+          - ✅ **Testes**: Passaram
+          - 👤 **Author**: @${{ github.actor }}
+          - 🔧 **Workflow**: #${{ github.run_number }}
+          EOF
 
       - name: PR already exists notification
         if: steps.check-pr.outputs.exists == 'true'
