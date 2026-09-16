@@ -1,4 +1,3 @@
-from datetime import datetime
 from decimal import Decimal
 from enum import Enum
 
@@ -102,11 +101,6 @@ class ContaRead(ContaBase):
     """Schema para leitura de conta"""
 
     id: int
-    usuario_id: int
-    created_at: datetime | None
-    updated_at: datetime | None
-    deleted_at: datetime | None
-    ativo: bool
 
     @computed_field
     @property

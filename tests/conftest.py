@@ -64,7 +64,7 @@ async def db_session() -> AsyncGenerator[AsyncSession]:
 
 
 @pytest_asyncio.fixture(scope="function")
-async def client(db_session: AsyncSession):
+async def client(db_session: AsyncSession) -> AsyncGenerator[AsyncClient]:
     async def override_get_db() -> AsyncGenerator[AsyncSession]:
         yield db_session
 

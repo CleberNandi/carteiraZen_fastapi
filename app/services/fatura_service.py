@@ -1,4 +1,5 @@
 from datetime import date
+from typing import Any
 
 from sqlalchemy import and_, extract
 from sqlalchemy.orm import Session
@@ -16,7 +17,6 @@ class FaturaService:
     def obter_fatura_atual(db: Session, cartao_id: int) -> Fatura | None:
         """Obtém a fatura atual (em aberto) do cartão"""
         hoje = date.today()
-
         return (
             db.query(Fatura)
             .filter(
@@ -34,7 +34,6 @@ class FaturaService:
     def obter_proxima_fatura(db: Session, cartao_id: int) -> Fatura | None:
         """Obtém a próxima fatura do cartão"""
         hoje = date.today()
-
         return (
             db.query(Fatura)
             .filter(
@@ -48,20 +47,15 @@ class FaturaService:
     def criar_fatura_se_necessario(db: Session, cartao: Cartao) -> Fatura:
         """Cria uma nova fatura se não existir uma atual"""
         fatura_atual = FaturaService.obter_fatura_atual(db, cartao.id)
-
         if not fatura_atual:
-            # Verifica se já existe uma próxima fatura
             proxima_fatura = FaturaService.obter_proxima_fatura(db, cartao.id)
-
             if not proxima_fatura:
-                # Cria nova fatura
                 nova_fatura = Fatura.gerar_proxima_fatura(cartao)
                 db.add(nova_fatura)
                 db.commit()
                 db.refresh(nova_fatura)
                 return nova_fatura
             return proxima_fatura
-
         return fatura_atual
 
     @staticmethod
@@ -69,22 +63,16 @@ class FaturaService:
         db: Session, transacao: Transacao, cartao: Cartao
     ) -> None:
         """Adiciona uma transação à fatura apropriada"""
-        # Determina em qual fatura a transação deve aparecer
         if transacao.data_transacao.day <= cartao.dia_fechamento:
-            # Transação vai para fatura atual
-            fatura = FaturaService.obter_fatura_atual(db, cartao.id)
-            if not fatura:
-                fatura = FaturaService.criar_fatura_se_necessario(db, cartao)
+            fatura = FaturaService.obter_fatura_atual(
+                db, cartao.id
+            ) or FaturaService.criar_fatura_se_necessario(db, cartao)
         else:
-            # Transação vai para próxima fatura
-            fatura = FaturaService.obter_proxima_fatura(db, cartao.id)
-            if not fatura:
-                fatura = FaturaService.criar_fatura_se_necessario(db, cartao)
-
-        # Associa a transação à fatura
+            fatura = FaturaService.obter_proxima_fatura(
+                db, cartao.id
+            ) or FaturaService.criar_fatura_se_necessario(db, cartao)
         transacao.fatura_id = fatura.id
         fatura.adicionar_transacao(transacao)
-
         db.commit()
 
     @staticmethod
@@ -105,7 +93,6 @@ class FaturaService:
         if data_pagamento is None:
             data_pagamento = date.today()
 
-        # Cria registro do pagamento
         pagamento = FaturaPagamento(
             fatura_id=fatura_id,
             usuario_id=usuario_id,
@@ -114,25 +101,20 @@ class FaturaService:
             forma_pagamento=forma_pagamento,
         )
 
-        # Atualiza valores da fatura
         fatura.valor_pago += valor
-
-        # Marca como paga se valor total foi quitado
         if fatura.valor_pago >= fatura.valor_total:
             fatura.paga = True
-            fatura.valor_pago = fatura.valor_total  # Ajusta se pagou a mais
+            fatura.valor_pago = fatura.valor_total
 
         db.add(pagamento)
         db.commit()
         db.refresh(pagamento)
-
         return pagamento
 
     @staticmethod
     def obter_faturas_vencidas(db: Session, usuario_id: int) -> list[Fatura]:
         """Obtém todas as faturas vencidas do usuário"""
         hoje = date.today()
-
         faturas_vencidas = (
             db.query(Fatura)
             .filter(
@@ -144,11 +126,8 @@ class FaturaService:
             )
             .all()
         )
-
-        # Marca como vencidas e calcula juros/multa
         for fatura in faturas_vencidas:
             fatura.marcar_como_vencida()
-
         db.commit()
         return faturas_vencidas
 
@@ -168,7 +147,6 @@ class FaturaService:
             )
             .all()
         )
-
         total_faturas = len(faturas)
         total_valor = sum(f.valor_total for f in faturas)
         total_pago = sum(f.valor_pago for f in faturas)
@@ -187,3 +165,59 @@ class FaturaService:
             if total_valor > 0
             else 100.0,
         }
+
+    # ===============================
+    # NOVOS MÉTODOS CRUD
+    # ===============================
+    @staticmethod
+    def listar_faturas(
+        db: Session, usuario_id: int | None = None, cartao_id: int | None = None
+    ) -> list[Fatura]:
+        """Lista faturas por usuário e/ou cartão"""
+        query = db.query(Fatura)
+        if usuario_id:
+            query = query.filter(Fatura.usuario_id == usuario_id)
+        if cartao_id:
+            query = query.filter(Fatura.cartao_id == cartao_id)
+        return query.all()
+
+    @staticmethod
+    def atualizar_fatura(db: Session, fatura_id: int, dados: dict[str, Any]) -> Fatura:
+        """Atualiza campos de uma fatura"""
+        fatura = db.query(Fatura).filter(Fatura.id == fatura_id).first()
+        if not fatura:
+            message = "Fatura não encontrada"
+            raise ValueError(message)
+
+        # Atualiza apenas campos válidos
+        campos_editaveis = {
+            "valor_total",
+            "valor_pago",
+            "paga",
+            "data_fechamento",
+            "data_vencimento",
+            "observacoes",
+        }
+        for campo, valor in dados.items():
+            if campo in campos_editaveis:
+                setattr(fatura, campo, valor)
+
+        db.commit()
+        db.refresh(fatura)
+        return fatura
+
+    @staticmethod
+    def deletar_fatura(db: Session, fatura_id: int) -> None:
+        """Deleta uma fatura (se permitido)"""
+        fatura = db.query(Fatura).filter(Fatura.id == fatura_id).first()
+        if not fatura:
+            message = "Fatura não encontrada"
+            raise ValueError(message)
+
+        # ⚠️ Validação de integridade
+        if fatura.transacoes and len(fatura.transacoes) > 0:
+            message = "Não é possível deletar fatura com transações associadas"
+            raise ValueError(message)
+
+        db.delete(fatura)
+        db.commit()
