@@ -38,9 +38,6 @@ class FaturaResponse(FaturaBase):
     created_at: date | None = None
     updated_at: date | None = None
 
-    class Config:
-        from_attributes = True
-
 
 class FaturaPagamentoCreate(BaseSchema):
     fatura_id: int
@@ -61,9 +58,6 @@ class FaturaPagamentoResponse(BaseSchema):
     comprovante: str | None = None
     observacoes: str | None = None
     created_at: date | None = None
-
-    class Config:
-        from_attributes = True
 
 
 class FaturasResumoResponse(BaseSchema):

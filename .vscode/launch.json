@@ -19,6 +19,23 @@
       },
       "envFile": "${workspaceFolder}/.env",
       "console": "integratedTerminal"
+    },
+    {
+      "name": "Debug Pytest",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "pytest",
+      "args": [
+        "-s",
+        "-v",
+        "${file}"
+      ],
+      "justMyCode": true,
+      "env": {
+        "ENV_MODE": "test"
+      },
+      "envFile": "${workspaceFolder}/.env",
+      "console": "integratedTerminal"
     }
   ]
 }

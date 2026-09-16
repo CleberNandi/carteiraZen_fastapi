@@ -7,36 +7,37 @@ license = "MIT"
 authors = [{ name = "Cleber Goulart Nandi", email = "cleber.nandi@gmail.com" }]
 requires-python = ">=3.13"
 dependencies = [
-    "alembic>=1.16.4",
-    "asyncpg>=0.30.0",
-    "dynaconf>=3.2.11",
-    "fastapi>=0.116.1",
-    "fastapi-mail>=1.5.0",
-    "httpx>=0.28.1",
-    "nest-asyncio>=1.6.0",
-    "passlib[bcrypt]>=1.7.4",
-    "psycopg2-binary>=2.9.10",
-    "pydantic[email]>=2.11.7",
-    "pyngrok>=7.3.0",
-    "pyotp>=2.9.0",
-    "python-jose[cryptography]>=3.5.0",
-    "python-multipart>=0.0.20",
-    "qrcode[pil]>=8.2",
-    "slowapi>=0.1.9",
-    "sqlalchemy>=2.0.43",
-    "uvicorn>=0.35.0",
+  "alembic>=1.16.4",
+  "asyncpg>=0.30.0",
+  "dynaconf>=3.2.11",
+  "fastapi>=0.116.1",
+  "fastapi-mail>=1.5.0",
+  "httpx>=0.28.1",
+  "nest-asyncio>=1.6.0",
+  "passlib[bcrypt]>=1.7.4",
+  "psycopg2-binary>=2.9.10",
+  "pydantic[email]>=2.11.7",
+  "pyngrok>=7.3.0",
+  "pyotp>=2.9.0",
+  "python-dateutil>=2.9.0.post0",
+  "python-jose[cryptography]>=3.5.0",
+  "python-multipart>=0.0.20",
+  "qrcode[pil]>=8.2",
+  "slowapi>=0.1.9",
+  "sqlalchemy>=2.0.43",
+  "uvicorn>=0.35.0",
 ]
 
 [dependency-groups]
 dev = [
-    "aiosqlite>=0.21.0",
-    "httpx>=0.28.1",
-    "pyright>=1.1.403",
-    "pytest>=8.4.1",
-    "pytest-asyncio>=1.1.0",
-    "pytest-cov>=6.2.1",
-    "pytest-xdist>=3.8.0",
-    "ruff>=0.12.8",
+  "aiosqlite>=0.21.0",
+  "httpx>=0.28.1",
+  "pyright>=1.1.403",
+  "pytest>=8.4.1",
+  "pytest-asyncio>=1.1.0",
+  "pytest-cov>=6.2.1",
+  "pytest-xdist>=3.8.0",
+  "ruff>=0.12.8",
 ]
 
 [project.urls]
@@ -65,7 +66,40 @@ ignore = ["B008"]
 
 [tool.ruff.lint]
 select = [
-    "ASYNC", "A", "ANN", "B", "BLE", "C4", "C90", "COM", "E", "EM", "ERA", "EXE", "F", "FBT", "FIX", "I", "ICN", "ISC", "Q", "RET", "RSE", "S", "SIM", "SLF", "T10", "T20", "TC", "TD", "TRY", "UP", "W", "YTT", "RUF", "N",
+  "ASYNC",
+  "A",
+  "ANN",
+  "B",
+  "BLE",
+  "C4",
+  "C90",
+  "COM",
+  "E",
+  "EM",
+  "ERA",
+  "EXE",
+  "F",
+  "FBT",
+  "FIX",
+  "I",
+  "ICN",
+  "ISC",
+  "Q",
+  "RET",
+  "RSE",
+  "S",
+  "SIM",
+  "SLF",
+  "T10",
+  "T20",
+  "TC",
+  "TD",
+  "TRY",
+  "UP",
+  "W",
+  "YTT",
+  "RUF",
+  "N",
 ]
 ignore = ["T201", "COM812", "B008"]
 
@@ -90,16 +124,19 @@ combine-as-imports = true
 # ============================
 [tool.pyright]
 typeCheckingMode = "strict"
-pythonVersion = "3.13.3"
+pythonVersion = "3.13"
 include = ["app", "tests"]
 exclude = [
-    "**/venv", "**/.venv", "**/env", "**/.env", "**/node_modules", "**/__pycache__",
+  "**/venv",
+  "**/.venv",
+  "**/env",
+  "**/.env",
+  "**/node_modules",
+  "**/__pycache__",
 ]
 venv = ".venv"
 venvPath = "."
-executionEnvironments = [
-  { root = ".", extraPaths = ["app"] }
-]
+executionEnvironments = [{ root = ".", extraPaths = ["app"] }]
 
 # ============================
 # Testes (Pytest)
@@ -114,10 +151,18 @@ addopts = [
   "--ignore=docs_src",
   "-s",
   "--color=yes",
-  "--tb=short"
+  "--tb=short",
 ]
 xfail_strict = true
 junit_family = "xunit2"
+markers = [
+  "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+  "integration: marks tests as integration tests",
+  "unit: marks tests as unit tests",
+  "performance: marks tests as performance tests",
+  "security: marks tests as security tests",
+  "edgecase: marks tests as edge case tests",
+]
 
 
 # ============================

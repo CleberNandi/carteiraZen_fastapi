@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from services.orcamento_service import OrcamentoService
 from sqlalchemy.orm import Session
 
-from app.core.database import get_db
+from app.core.database import get_async_db
 from app.core.dependencies import get_current_user
 from app.models import orcamento, usuario
 from app.schemas.orcamento import (
@@ -17,13 +17,13 @@ from app.schemas.orcamento import (
 Orcamento = orcamento.Orcamento
 Usuario = usuario.Usuario
 
-router = APIRouter(prefix="/orcamentos", tags=["orcamentos"])
+router = APIRouter()
 
 
 @router.post("/", response_model=OrcamentoResponse, status_code=status.HTTP_201_CREATED)
 def criar_orcamento(
     orcamento_data: OrcamentoCreate,
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_async_db),
     current_user: Usuario = Depends(get_current_user),
 ) -> Orcamento:
     """Cria um novo orçamento"""
@@ -45,7 +45,7 @@ def criar_orcamento(
 
 @router.get("/", response_model=list[OrcamentoResponse])
 def listar_orcamentos(
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_async_db),
     current_user: Usuario = Depends(get_current_user),
     skip: int = Query(0, ge=0),
     limit: int = Query(100, ge=1, le=100),
@@ -82,7 +82,7 @@ def listar_orcamentos(
 @router.get("/{orcamento_id}", response_model=OrcamentoResponse)
 def obter_orcamento(
     orcamento_id: int,
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_async_db),
     current_user: Usuario = Depends(get_current_user),
 ) -> Orcamento:
     """Obtém detalhes de um orçamento específico"""
@@ -104,7 +104,7 @@ def obter_orcamento(
 def atualizar_orcamento(
     orcamento_id: int,
     orcamento_data: OrcamentoUpdate,
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_async_db),
     current_user: Usuario = Depends(get_current_user),
 ) -> Orcamento:
     """Atualiza um orçamento existente"""
@@ -138,7 +138,7 @@ def atualizar_orcamento(
 @router.delete("/{orcamento_id}")
 def excluir_orcamento(
     orcamento_id: int,
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_async_db),
     current_user: Usuario = Depends(get_current_user),
 ) -> dict[str, str]:
     """Exclui um orçamento (soft delete - marca como inativo)"""
@@ -163,7 +163,7 @@ def excluir_orcamento(
 def obter_resumo_orcamentos(
     ano: int,
     mes: int,
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_async_db),
     current_user: Usuario = Depends(get_current_user),
 ) -> dict[str, str | int | float]:
     """Obtém resumo dos orçamentos de um período"""
@@ -174,7 +174,8 @@ def obter_resumo_orcamentos(
 
 @router.get("/alertas/excedidos", response_model=OrcamentosExcedidosResponse)
 def obter_orcamentos_excedidos(
-    db: Session = Depends(get_db), current_user: Usuario = Depends(get_current_user)
+    db: Session = Depends(get_async_db),
+    current_user: Usuario = Depends(get_current_user),
 ) -> dict[str, int | list[Orcamento]]:
     """Obtém orçamentos que excederam o limite"""
     orcamentos_excedidos = OrcamentoService.obter_orcamentos_excedidos(
@@ -192,7 +193,8 @@ def obter_orcamentos_excedidos(
 
 @router.get("/alertas/notificacoes", response_model=OrcamentosAlertaResponse)
 def obter_orcamentos_para_notificar(
-    db: Session = Depends(get_db), current_user: Usuario = Depends(get_current_user)
+    db: Session = Depends(get_async_db),
+    current_user: Usuario = Depends(get_current_user),
 ) -> OrcamentosAlertaResponse:
     """Obtém orçamentos que devem gerar alertas"""
     orcamentos_alerta = OrcamentoService.obter_orcamentos_para_notificar(

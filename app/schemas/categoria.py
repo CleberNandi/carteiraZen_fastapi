@@ -3,10 +3,10 @@ from app.schemas.base import BaseSchema
 
 class CategoriaBase(BaseSchema):
     nome: str
-    tipo: str
-    cor: str
-    ativo: bool = True
-    usuario_id: int
+    descricao: str | None = None
+    icone: str = "help-circle"
+    categoria_pai_id: int | None = None
+    cor: str = "#C9F5FF"
 
 
 class CategoriaCreate(CategoriaBase):

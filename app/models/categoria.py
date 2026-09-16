@@ -1,11 +1,11 @@
 from typing import TYPE_CHECKING, Optional
 
-from mixins.mixins import Mixins
 from mixins.sync_mixins import SyncMixin
-from sqlalchemy import Boolean, ForeignKey, String, Text
+from sqlalchemy import ForeignKey, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.database import Base
+from app.mixins.mixins import Mixins
 
 if TYPE_CHECKING:
     from models.orcamento import Orcamento
@@ -25,7 +25,6 @@ class Categoria(Base, Mixins, SyncMixin):
     usuario_id: Mapped[int | None] = mapped_column(
         ForeignKey("usuarios.id")
     )  # NULL = categoria global
-    ativo: Mapped[bool] = mapped_column(Boolean, default=True)
 
     # Relacionamentos
     categoria_pai: Mapped[Optional["Categoria"]] = relationship(

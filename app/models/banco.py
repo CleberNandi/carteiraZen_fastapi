@@ -2,12 +2,12 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from mixins.mixins import Mixins
 from mixins.sync_mixins import SyncMixin
 from sqlalchemy import String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.database import Base
+from app.mixins.mixins import Mixins
 
 if TYPE_CHECKING:
     from app.models.conta import Conta

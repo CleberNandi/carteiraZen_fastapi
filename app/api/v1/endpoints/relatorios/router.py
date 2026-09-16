@@ -14,7 +14,7 @@ from schemas.relatorio import (
 from sqlalchemy import extract, func
 from sqlalchemy.orm import Session
 
-from app.core.database import get_db
+from app.core.database import get_async_db
 from app.core.dependencies import get_current_user
 from app.models import categoria, fatura, orcamento, transacao, usuario
 
@@ -24,12 +24,12 @@ Orcamento = orcamento.Orcamento
 Transacao = transacao.Transacao
 Usuario = usuario.Usuario
 
-router = APIRouter(prefix="/relatorios", tags=["relatórios"])
+router = APIRouter()
 
 
 @router.get("/dashboard", response_model=RelatorioResponse)
 def obter_dashboard(
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_async_db),
     current_user: Usuario = Depends(get_current_user),
     ano: int | None = None,
     mes: int | None = None,
@@ -137,7 +137,7 @@ def obter_dashboard(
 
 @router.get("/gastos-mensais", response_model=list[GastoMensalResponse])
 def obter_gastos_mensais(
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_async_db),
     current_user: Usuario = Depends(get_current_user),
     ano: int = Query(default=datetime.now().year),
     categoria_id: int | None = None,
@@ -189,7 +189,7 @@ def obter_gastos_mensais(
     "/comparativo-orcamentos", response_model=list[ComparativoOrcamentoResponse]
 )
 def obter_comparativo_orcamentos(
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_async_db),
     current_user: Usuario = Depends(get_current_user),
     ano: int = Query(default=datetime.now().year),
     mes: int = Query(default=datetime.now().month),
@@ -232,7 +232,7 @@ def obter_comparativo_orcamentos(
 
 @router.get("/evolucao-gastos", response_model=list[EvolucaoGastoResponse])
 def obter_evolucao_gastos(
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_async_db),
     current_user: Usuario = Depends(get_current_user),
     meses: int = Query(default=6, ge=3, le=24),
 ) -> list[EvolucaoGastoResponse]:

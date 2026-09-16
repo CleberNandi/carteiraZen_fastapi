@@ -5,6 +5,7 @@ PROJECT_NAME = "CarteiraZen"
 VERSION = "0.1.0"
 BASE_URL = "app"
 
+
 # JWT Settings
 JWT_SECRET_KEY = "your-super-secret-jwt-key-change-in-production"
 JWT_ALGORITHM = "HS256"
@@ -27,21 +28,21 @@ RATE_LIMIT_REGISTER = "3/minute"
 
 # email
 FRONTEND_URL = "http://localhost:8000/api/v1/auth"
+MAIL_FROM = "contato@nandidigitalworks.com.br"
+MAIL_FROM_NAME = "Nandi Digital Works"
+
 
 [dev]
 ENV = "dev"
 ENV_MODE = "dev"
-DATABASE_URL = "postgresql+asyncpg://${ZNY_POSTGRES_USER}:${ZNY_POSTGRES_PASSWORD}@${ZNY_POSTGRES_HOST}:${ZNY_POSTGRES_PORT}/${ZNY_POSTGRES_DB}"
 
 [hml]
 ENV = "hml"
 ENV_MODE = "hml"
-DATABASE_URL = "postgresql+asyncpg://${ZNY_POSTGRES_USER}:${ZNY_POSTGRES_PASSWORD}@${ZNY_POSTGRES_HOST}:${ZNY_POSTGRES_PORT}/${ZNY_POSTGRES_DB}"
 
 [prod]
 ENV = "prod"
 ENV_MODE = "prod"
-DATABASE_URL = "postgresql+asyncpg://${ZNY_POSTGRES_USER}:${ZNY_POSTGRES_PASSWORD}@${ZNY_POSTGRES_HOST}:${ZNY_POSTGRES_PORT}/${ZNY_POSTGRES_DB}"
 
 [test]
 ENV = "test"
